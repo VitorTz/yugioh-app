@@ -36,7 +36,6 @@ const Profile = () => {
     [userStateChanged]
   )
 
-
   return (
     <SafeAreaView style={AppStyle.safeArea}>
       <CustomStatusBar></CustomStatusBar>      
