@@ -1,10 +1,6 @@
-import { View, StyleSheet, Platform, Pressable, TouchableOpacity } from 'react-native';
-import { useLinkBuilder, useTheme } from '@react-navigation/native';
-import { Text, PlatformPressable } from '@react-navigation/elements';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { wp, hp } from '@/helpers/common';
+import { View, StyleSheet } from 'react-native';
+import { useLinkBuilder } from '@react-navigation/native';
 import { Colors } from '@/constants/Colors';
-import { Ionicons } from '@expo/vector-icons';
 import TabBarButton from './TabBarButton';
 import { AppConstants } from '../constants/AppConstants';
 
@@ -67,23 +63,19 @@ export default TabBar;
 
 
 const styles = StyleSheet.create({
-    container: { 
-        marginHorizontal: 16,       
-        paddingVertical: 14,
-        position: 'absolute',
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: Colors.gray,
-        borderRadius: 4,
-        bottom: 16
+    container: {              
+      paddingVertical: 14,      
+      position: 'absolute',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: Colors.gray,        
+      bottom: 0
     },
     tabBarItem: {
-        flex: 1,
-        borderRadius: 32,
-        justifyContent: "center",
-        gap: 4,
-        alignItems: "center"
-    }
+      flex: 1,      
+      justifyContent: "center",      
+      alignItems: "center"
+  }
     
 })

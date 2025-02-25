@@ -6,7 +6,10 @@ const { API_KEY } = Constants.expoConfig?.extra || {}
 const supabaseUrl = 'https://mlhjkqlgzlkvtqjngzdr.supabase.co'
 const supabaseKey = API_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+
+export const supabase = createClient(
+    supabaseUrl, 
+supabaseKey, {    
     auth: {
       storage: AsyncStorage,
       autoRefreshToken: true,
@@ -16,13 +19,10 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 })
 
 
-export const fetchUserId = async () => {
-    return await supabase.auth.getSession().data.session.user.id
-}
-
-export const fetchUser = async () => {    
-    const { data: { user } } = await supabase.auth.getUser()
-    const {data, error} = await supabase.from("users").select("name").eq("user_id", user.id).single()
+export const fetchUser = async () => {        
+    const user = (await supabase.auth.getUser()).data.user
+    let { data, error } = await supabase.from('users').select('name, images(image_url)').eq("user_id", user.id).single()
     user.name = data.name
-    return user
+    user.image_url = data.images.image_url        
+    return {user: user, err: error}
 }

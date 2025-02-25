@@ -2,6 +2,7 @@ import { StyleSheet } from "react-native";
 import { Colors } from "./Colors";
 import { wp, hp } from "../helpers/common";
 
+
 const AppStyle = StyleSheet.create({
     safeArea: {
         flex: 1, 

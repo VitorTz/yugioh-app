@@ -7,17 +7,16 @@ import {
   StyleSheet, 
   Text, 
   TextInput, 
-  View,
-  AppState
+  View  
 } from 'react-native'
 import { useForm, Controller } from 'react-hook-form';
 import Animated from 'react-native-reanimated';
 import AppStyle from '../../constants/AppStyle'
-import { wp, hp, sleep } from '../../helpers/common';
+import { sleep } from '../../helpers/common';
 import { Colors } from '../../constants/Colors'
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { fetchUser, supabase } from '../../context/supabase';
+import { supabase } from '../../context/supabase';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 
@@ -54,19 +53,21 @@ const SignIn = () => {
 
   const onSubmit = async (form_data) => {
     setLoading(true);
+
     const {data, error} = await supabase.auth.signInWithPassword({
       email: form_data.email,
       password: form_data.password
     })
+
     setLoading(false);
 
     if (error) {
       showToast("Error!", error.message)
+      return
     }
     
-    if (data.session) {
-      const {response, err} = await fetchUser()
-      showToast("Success!", `Welcome, ${response.name}`)
+    if (data.session) {      
+      showToast("Success!", "Welcome, 🖐")
       await sleep(2000)
       router.replace("(tabs)/database")
     }

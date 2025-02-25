@@ -113,6 +113,8 @@ const SignUp = () => {
   return (
     <SafeAreaView style={AppStyle.safeArea} >
       <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1, gap: 40, width: '100%'}}>
+        
+        {/* Header */}
         <View style={{flexDirection: "row", marginBottom: 40, alignContent: "center", justifyContent: "space-between"}} >
           <View style={{flexDirection: 'row', alignItems: "center", justifyContent: "center"}} > 
             <Text style={{color: Colors.orange, fontWeight: "bold", fontSize: 32}} >Ygo</Text>
@@ -123,8 +125,10 @@ const SignUp = () => {
           </Pressable>
         </View>
 
+        {/* Register Form */}
+
         <View style={AppStyle.form} >
-          {/* First Name */}
+          {/* Name */}
           <Text style={AppStyle.textInputHeader} >Name</Text>
           <Controller
             control={control}
@@ -208,16 +212,15 @@ const SignUp = () => {
           )}
 
           
-          {/* submit button */}
+          {/* Submit Button */}
           <Pressable onPress={handleSubmit(onSubmit)} style={{width: '100%', alignSelf: "center", justifyContent: "center"}}>
             <Animated.View style={AppStyle.formButton} >
               {
                 isLoading ? 
-                  <ActivityIndicator size={32} color={Colors.background} />
-                  :
-                <Text style={{color: Colors.background, fontSize: 20, alignSelf: "center"}} >
-                  Login
-                </Text>
+                  <ActivityIndicator size={32} color={Colors.background} /> :
+                  <Text style={{color: Colors.background, fontSize: 20, alignSelf: "center"}} >
+                    Login
+                  </Text>
               }
             </Animated.View>
           </Pressable>
@@ -248,11 +251,4 @@ const SignUp = () => {
 
 export default SignUp
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    alignItems: "center",
-    justifyContent: "center"    
-  }  
-})
+const styles = StyleSheet.create({})
