@@ -14,6 +14,8 @@ const _layout = () => {
               <Stack.Screen name='index' options={{headerShown: false}} />
               <Stack.Screen name='(auth)/signin' options={{headerShown: false}} />
               <Stack.Screen name='(auth)/signup' options={{headerShown: false}} />
+              <Stack.Screen name='(pages)/profilePhoto' options={{headerShown: false}} />
+              <Stack.Screen name='(pages)/profileInfo' options={{headerShown: false}} />
               <Stack.Screen name='(tabs)' options={{headerShown: false}} />
           </Stack>
       </View>

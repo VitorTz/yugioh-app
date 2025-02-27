@@ -1,3 +1,4 @@
+import { Session, User } from "@supabase/supabase-js"
 
 
 export interface ProfilePhoto {
@@ -8,5 +9,16 @@ export interface ProfilePhoto {
 
 export interface ProfileInfo {
     name: string
-    profilePhoto: ProfilePhoto    
+    profilePhoto: ProfilePhoto
 }
+
+export interface Context {
+    session: Session
+    user: User
+    profileInfo: ProfileInfo
+}
+
+export interface GlobalState {
+    context: Context | null;
+    setContext: (newContext: Context | null) => void;
+};

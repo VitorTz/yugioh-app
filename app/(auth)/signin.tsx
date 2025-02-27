@@ -18,7 +18,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useGlobalState } from '@/context/GlobalContext';
 import { router } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { supabase, supaFetchUserProfileInfo } from '@/lib/supabase';
+import Toast from 'react-native-toast-message';
+import { showToast } from '@/helpers/util'
+import { sleep } from '@/helpers/sleep'
 
 
 const schema = yup.object().shape({  
@@ -44,21 +47,58 @@ const SignIn = () => {
 
   const [isLoading, setLoading] = useState(false)
 
-    const {
-        control,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<FormData>({
-        resolver: yupResolver(schema),
-        defaultValues: {            
-            email: '',
-            password: '',            
-        },
-    });
+  const {
+      control,
+      handleSubmit,
+      formState: { errors },
+  } = useForm<FormData>({
+      resolver: yupResolver(schema),
+      defaultValues: {            
+          email: '',
+          password: '',            
+      },
+  });
 
-    const onSubmit = async (form_data: FormData) => {
-        console.log(form_data)
-    };
+  const onSubmit = async (form_data: FormData) => {
+      setLoading(true)
+      
+      const {data, error} = await supabase.auth.signInWithPassword(
+        {
+          email: form_data.email,
+          password: form_data.password
+        }
+      )
+
+      setLoading(false)
+
+      if (error) {
+        showToast("Error", error.message, "error")        
+        return
+      }
+      
+      const {data: {session}} = await supabase.auth.getSession()
+      if (session) {
+        const {userInfo} = await supaFetchUserProfileInfo(session.user.id)          
+        if (userInfo == null) {
+          showToast("Error", "could not retrieve user profile info", "error")
+          await sleep(2000)
+          return
+        }
+        setContext(
+          {
+            session: session,
+            user: session.user,
+            profileInfo: userInfo
+          }
+        )
+        showToast("Success", `Welcome, ${userInfo.name}`, "success")
+        await sleep(2000)
+        router.replace("/(tabs)/database")
+      } else {
+        showToast("Error", "could not retrive login session", "error")
+      }
+        
+  };
 
   return (
     <SafeAreaView style={AppStyle.safeArea} >
@@ -117,10 +157,15 @@ const SignIn = () => {
                       <Text style={styles.formButtonText} >Login</Text>
                   }
               </Pressable>
-
+          <View style={{flexDirection: "row", marginTop: 20, gap: 4}} >
+            <Text style={{color: Colors.orange, fontSize: 14}} >Don't Have an Account?</Text> 
+            <Pressable onPress={() => router.replace("/(auth)/signup")}  hitSlop={{left: 10, top: 10, bottom: 10, right: 10}} >
+              <Text style={{textDecorationLine: "underline", fontWeight: "bold", color: Colors.orange, fontSize: 14}} >Sign Up</Text> 
+            </Pressable>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
+    <Toast/>
     </SafeAreaView>
   )
 }

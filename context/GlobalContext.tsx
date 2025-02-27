@@ -1,28 +1,12 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { ProfileInfo } from '@/helpers/types';
-
-type GlobalState = {
-  context: {
-    session: Session | null
-    user: User | null
-    profileInfo: ProfileInfo | null
-  }
-  setContext: (newContext: any) => void;
-};
+import { GlobalState } from '@/helpers/types';
 
 
 const GlobalStateContext = createContext<GlobalState | undefined>(undefined);
 
 
 export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
-    const [context, setContext] = useState(
-        {
-            session: null, 
-            user: null, 
-            profileInfo: null            
-        }
-    );    
+    const [context, setContext] = useState(null);
 
     return (
         <GlobalStateContext.Provider value={{ context, setContext }}>
