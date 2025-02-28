@@ -18,7 +18,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useGlobalState } from '@/context/GlobalContext';
 import { router } from 'expo-router';
-import { supabase, supaFetchUserProfileInfo } from '@/lib/supabase';
+import { supabase, supaFetchProfileIcons, supaFetchUserProfileInfo } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { showToast } from '@/helpers/util'
 import { sleep } from '@/helpers/sleep'
@@ -78,7 +78,8 @@ const SignIn = () => {
       
       const {data: {session}} = await supabase.auth.getSession()
       if (session) {
-        const {userInfo} = await supaFetchUserProfileInfo(session.user.id)          
+        const { userInfo } = await supaFetchUserProfileInfo(session.user.id)          
+        const { allProfileIcons } = await supaFetchProfileIcons()
         if (userInfo == null) {
           showToast("Error", "could not retrieve user profile info", "error")
           await sleep(2000)
@@ -88,7 +89,8 @@ const SignIn = () => {
           {
             session: session,
             user: session.user,
-            profileInfo: userInfo
+            profileInfo: userInfo,
+            allProfileIcons: allProfileIcons
           }
         )
         showToast("Success", `Welcome, ${userInfo.name}`, "success")

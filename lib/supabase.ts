@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@supabase/supabase-js'
-import { ProfileInfo } from '@/helpers/types'
+import { ImageDB, ProfileInfo } from '@/helpers/types'
 
 const supabaseUrl = process.env.EXPO_PUBLIC_API_URL
 const supabaseAnonKey = process.env.EXPO_PUBLIC_API_KEY
@@ -32,3 +32,17 @@ export async function supaFetchUserProfileInfo(user_id: string): Promise<{userIn
     }
   }
   
+
+export async function supaFetchProfileIcons(): Promise<{allProfileIcons: ImageDB[]}> {
+  const {data, error} = await supabase.from("profile_icons").select("image_id, images (image_url)")  
+  if (data) {
+    let icons: ImageDB[] = data.map(
+      (item) => {return {imageId: item.image_id, imageUrl: item.images.image_url}}
+    )
+    return {allProfileIcons: icons}
+  }
+  if (error) {
+    console.log(error.message)
+  }
+  return {allProfileIcons: []}
+}

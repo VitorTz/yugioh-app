@@ -5,7 +5,7 @@ import { useGlobalState } from '@/context/GlobalContext'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/Colors'
-import { ProfilePhoto } from '@/helpers/types'
+import { ImageDB } from '@/helpers/types'
 import { supabase } from '@/lib/supabase'
 import Toast from 'react-native-toast-message'
 import { showToast } from '@/helpers/util'
@@ -17,59 +17,16 @@ import { AppConstants } from '@/constants/AppConstants'
 
 const profilePhoto = () => {
 
+    const {context, setContext} = useGlobalState()        
     const [loading, setLoading] = useState<boolean>(false)
-    const {context, setContext} = useGlobalState()
-    const [images, setImages] = useState<ProfilePhoto[]>([])
-    const [profilePhoto, setProfilePhoto] = useState<ProfilePhoto | null>(null)
-
-    const fetchImages = async () => {
-
-        if (context) {
-            setProfilePhoto(context.profileInfo.profilePhoto)
-        }
-
-        const {data, error} = await supabase.from("profile_icons").select("image_id, images (image_url)")
-        if (error) {
-            showToast("Error", "database has no profile icons", "error")
-            await sleep(1000)
-            return
-        }
-        let new_images: ProfilePhoto[] = []
-
-        data.map(
-            (item) => {
-                new_images.push(
-                    {
-                        imageId: item.image_id,
-                        imageUrl: item.images.image_url
-                    }
-                )
-            }
-        )
-        setImages(new_images)
-
-    }
-
-    const handleImagePress = (item: ProfilePhoto) => {
-        if (context) {            
-            setContext(
-                {
-                    session: context.session,
-                    user: context.user,
-                    profileInfo: {
-                        name: context.profileInfo.name,
-                        profilePhoto: item
-                    }
-                }
-            )
-            setProfilePhoto(item)
-        }
-    }
+    const [tempProfileIcon, setTempProfileIcon] = useState<ImageDB | null>(
+        context ? context.profileInfo.profilePhoto : null
+    )     
 
     const handleSave = async () => {
         setLoading(true)
-        if (context && profilePhoto) {                        
-            const {data, error} = await supabase.from("users").update({"image_id": profilePhoto.imageId}).eq("user_id", context.user.id).select()
+        if (context && tempProfileIcon) {                        
+            const {data, error} = await supabase.from("users").update({"image_id": tempProfileIcon.imageId}).eq("user_id", context.user.id).select()
             if (error) {
                 showToast("Error", error.message, "error")
             }
@@ -81,8 +38,9 @@ const profilePhoto = () => {
                         user: context.user,
                         profileInfo: {
                             name: context.profileInfo.name,
-                            profilePhoto: profilePhoto
-                        }
+                            profilePhoto: tempProfileIcon
+                        },
+                        allProfileIcons: context.allProfileIcons
                     }
                 )            
             }
@@ -90,16 +48,10 @@ const profilePhoto = () => {
         setLoading(false)
     }
 
-    useEffect(
-        () => {
-            fetchImages()
-        },
-        []
-    )
-
     return (
         <SafeAreaView style={AppStyle.safeAreaLarge} >
             <View style={{width: '100%', flexDirection: "row", alignItems: "center", justifyContent: "space-between"}} >
+                {/* Save Button */}
                 {
                     loading ? 
                     <View style={AppStyle.iconButton} >
@@ -110,7 +62,9 @@ const profilePhoto = () => {
                         <Ionicons name='checkmark-circle-outline' color={AppConstants.icon.color} size={AppConstants.icon.size}/>
                     </Pressable>
                 }
-
+                
+                
+                {/* Back Button */}
                 <Pressable style={AppStyle.iconButton} onPress={() => router.back()} hitSlop={AppConstants.hitSlopLarge}>
                     <Ionicons name='arrow-back-circle-outline' color={AppConstants.icon.color} size={AppConstants.icon.size} />
                 </Pressable>
@@ -120,8 +74,8 @@ const profilePhoto = () => {
             <View style={[AppStyle.backdrop, {marginTop: 30}]}>
                 <Animated.View entering={FadeInUp.delay(400).duration(500)} >
                     {
-                        profilePhoto ? 
-                        <Image source={profilePhoto.imageUrl} style={styles.image} />
+                        tempProfileIcon ? 
+                        <Image source={tempProfileIcon.imageUrl} style={styles.image} />
                         :
                         <Ionicons name='person-circle-outline' size={128} color={Colors.orange} />
                     }
@@ -132,12 +86,16 @@ const profilePhoto = () => {
                 <ScrollView>
                     <View style={styles.flexWrapContainer} >
                         {
-                            images.map(
-                                (item: ProfilePhoto, index: number) => {
+                            context && context.allProfileIcons.map(
+                                (item: ImageDB, index: number) => {
                                     return (
                                         <Animated.View key={item.imageId} entering={FadeInDown.delay(index * 50)} >
-                                            <Pressable onPress={() => handleImagePress(item)} >
-                                                <Image source={item.imageUrl} contentFit="cover" style={styles.listImage} />
+                                            <Pressable onPress={() => setTempProfileIcon(item)} >
+                                                <Image 
+                                                    source={item.imageUrl} 
+                                                    contentFit="cover" 
+                                                    style={styles.listImage}
+                                                />
                                             </Pressable>
                                         </Animated.View>
                                     )

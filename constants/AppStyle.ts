@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "./Colors";
+import { hp } from "@/helpers/util";
 
 
 const AppStyle = StyleSheet.create({
@@ -36,11 +37,17 @@ const AppStyle = StyleSheet.create({
         backgroundColor: Colors.gray,         
         alignItems: "center", 
         justifyContent: "center", 
-        width: "100%",  
+        width: "100%",
+        maxHeight: hp(80),
         padding: 10,
         paddingVertical: 20,
         borderCurve: "continuous",
         borderRadius: 12
+    },
+    textUserName: {
+        color: Colors.text, 
+        fontFamily: "LeagueSpartan_400Regular", 
+        fontSize: 18
     }
 })
 
