@@ -9,10 +9,11 @@ import { ImageDB } from '@/helpers/types'
 import { supabase } from '@/lib/supabase'
 import Toast from 'react-native-toast-message'
 import { showToast } from '@/helpers/util'
-import { sleep } from '@/helpers/sleep'
 import { router } from 'expo-router'
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated'
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
 import { AppConstants } from '@/constants/AppConstants'
+import { FlashList } from "@shopify/flash-list"
+import { ColumnItem } from '@/components/FlashListColumnItem'
 
 
 const profilePhoto = () => {
@@ -48,6 +49,19 @@ const profilePhoto = () => {
         setLoading(false)
     }
 
+    const CardContent = ({item, index}: {item: ImageDB, index: number}) => {
+        return (
+            <Animated.View entering={FadeInDown.delay(index * 50).duration(600)} >
+                <Pressable onPress={() => setTempProfileIcon(item) }>
+                    <Image 
+                        source={item.imageUrl} 
+                        contentFit='cover' 
+                        style={styles.listImage}/>
+                </Pressable>
+            </Animated.View>
+        )
+    }
+
     return (
         <SafeAreaView style={AppStyle.safeAreaLarge} >
             <View style={{width: '100%', flexDirection: "row", alignItems: "center", justifyContent: "space-between"}} >
@@ -72,38 +86,31 @@ const profilePhoto = () => {
             </View>
 
             <View style={[AppStyle.backdrop, {marginTop: 30}]}>
-                <Animated.View entering={FadeInUp.delay(400).duration(500)} >
+                <Animated.View entering={FadeInUp.delay(400).duration(500)} style={{marginBottom: 40}} >
                     {
                         tempProfileIcon ? 
                         <Image source={tempProfileIcon.imageUrl} style={styles.image} />
                         :
                         <Ionicons name='person-circle-outline' size={128} color={Colors.orange} />
                     }
-                </Animated.View>
-
-                <View style={{marginBottom: 40}}></View>
-
-                <ScrollView>
-                    <View style={styles.flexWrapContainer} >
-                        {
-                            context && context.allProfileIcons.map(
-                                (item: ImageDB, index: number) => {
-                                    return (
-                                        <Animated.View key={item.imageId} entering={FadeInDown.delay(index * 50)} >
-                                            <Pressable onPress={() => setTempProfileIcon(item)} >
-                                                <Image 
-                                                    source={item.imageUrl} 
-                                                    contentFit="cover" 
-                                                    style={styles.listImage}
-                                                />
-                                            </Pressable>
-                                        </Animated.View>
-                                    )
-                                }
-                            )
+                </Animated.View>                
+                <View style={{height: 200, width: '100%'}} >
+                    <FlashList                                                
+                        numColumns={3}
+                        data={context ? context.allProfileIcons :  []}
+                        renderItem={
+                            ({item, index}) => {
+                                return (
+                                    <ColumnItem index={index} numColumns={3} >
+                                        <CardContent item={item} index={index} />
+                                    </ColumnItem>
+                                )
+                            }
                         }
-                    </View>
-                </ScrollView>
+                        keyExtractor={(item) => item.imageUrl}
+                        estimatedItemSize={200}
+                    />
+                </View>
             </View>
 
             <Toast/>
@@ -120,9 +127,9 @@ const styles = StyleSheet.create({
         borderRadius: 128        
     },
     listImage: {
-        width: 60, 
-        height: 60, 
-        borderRadius: 60
+        width: 96, 
+        height: 96, 
+        borderRadius: 96
     },
     flexWrapContainer: {
         width: '100%', 
