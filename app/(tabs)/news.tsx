@@ -1,147 +1,90 @@
-import React, { useCallback, useRef, useMemo, useState } from "react";
-import { StyleSheet, View, Text, Button } from "react-native";
-import { FlatList, GestureHandlerRootView, Pressable, ScrollView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import BottomSheetView from "@gorhom/bottom-sheet";
-import BottomSheetModal from "@gorhom/bottom-sheet";
+import React, { useCallback, useRef, useMemo, useState, useEffect } from "react";
+import { StyleSheet, Pressable, ScrollView, Keyboard, TextInput, View, Text, Button } from "react-native";
+import BottomSheet, { BottomSheetFlatList, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Colors } from "@/constants/Colors";
-import { AppConstants, ARCHETYPES, ATTRIBUTES, CARD_TYPES, FRAMETYPES, RACES } from "@/constants/AppConstants";
-import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
-
-
-
-
-const DATA = [
-  {
-    type: "str",
-    name: "Archetypes",
-    items: ARCHETYPES
-  },
-  {
-    type: "str",
-    name: "Attributes",
-    items: ATTRIBUTES
-  },
-  {
-    type: "str",
-    name: "Races",
-    items: RACES
-  },
-  {
-    type: "str",
-    name: "Types",
-    items: CARD_TYPES
-  },
-  {
-    type: "str",
-    name: "Frametypes",
-    items: FRAMETYPES
-  }
-
-]
+import CategoryFilter from "@/components/CategoryFilter";
+import { AppConstants, ARCHETYPES, ATTRIBUTES, CARD_TYPES, FRAMETYPES, RACES } from "@/constants/AppConstants";
+import { NumberFilterType } from "@/helpers/types";
+import NumberFilter from "@/components/NumberFilter";
 
 
 const News = () => {
   // hooks
   const sheetRef = useRef<BottomSheet>(null);
   
-  // variables
-  const snapPoints = useMemo(() => ["75%"], []);
-
-  // callbacks
-  const handleSheetChange = useCallback((index: number) => {
-    console.log("handleSheetChange", index);
-  }, []);
+  const snapPoints = useMemo(() => ["50%"], []);
 
   const handleSnapPress = useCallback((index: number) => {
-    sheetRef.current?.snapToIndex(index);
+    sheetRef.current?.snapToIndex(index);    
   }, []);
 
   const handleClosePress = useCallback(() => {
     sheetRef.current?.close();
+    Keyboard.dismiss()
   }, []);
 
+  const [archetype, setArchetype] = useState<string | null>(null)
+  const [attribute, setAttribute] = useState<string | null>(null)
+  const [frametype, setFrametype] = useState<string | null>(null)
+  const [race, setRace] = useState<string | null>(null)
+  const [type, setType] = useState<string | null>(null)
+  const [level, setLevel] = useState<NumberFilterType>({number: '', comp: null})
+  const [attack, setAttack] = useState<NumberFilterType>({number: '', comp: null})
+  const [defence, setDefence] = useState<NumberFilterType>({number: '', comp: null})  
 
-  const [attribute, setAttribute] = useState('')
-  const [archetype, setArchetype] = useState('')
-  const [frametype, setFrametype] = useState('')
-  const [race, setRace] = useState('')
-  const [type, setType] = useState('')
-  const infos = [
-    attribute,
-    archetype,
-    frametype,
-    race,
-    type
-  ]
-
-  // render
-  const BottomSheetItem = ({section}: {section: any}) => {
-    const [selectedItem, setSelectedItem] = useState('')
-    
-    const handlePress = (name: string) => {
-      setSelectedItem(name == selectedItem ? '' : name)
-    }
-    
-    return (
-      <View style={{width: "100%", gap: 10, marginBottom: 10}} >
-        <Text style={{fontSize: 28, fontFamily: "LeagueSpartan_600SemiBold", color: Colors.orange}}>{section.name}</Text>
-        <FlatList
-          data={section.items}
-          horizontal={true}          
-          keyExtractor={item => item}          
-          renderItem={({item}) => {
-            return (
-                <Pressable 
-                  onPress={() => handlePress(item)}
-                  style={
-                  {
-                    paddingHorizontal: 20, 
-                    paddingVertical: 10, 
-                    backgroundColor: selectedItem == item ? Colors.red : Colors.background, 
-                    borderRadius: 4, 
-                    marginRight: 10
-                  }
-                }>
-                  <Text style={{color: "white"}} >
-                    {item}
-                  </Text>
-                </Pressable>
-              )
-            }
-          }
-        />
-      </View>
-    )
+  
+  const handleResetFilters = () => {
+    setArchetype(null)
+    setAttribute(null)
+    setFrametype(null)
+    setRace(null)
+    setType(null)
+    setLevel({number: '', comp: null})
+    setAttack({number: '', comp: null})
+    setDefence({number: '', comp: null})
+    Keyboard.dismiss()
   }
+
 
   return (
     <View style={{flex: 1}} >
-      <Pressable onPress={() => handleSnapPress(0)} style={{width: 100, height: 100, backgroundColor: "red"}} >
+      <Pressable onPress={() => handleSnapPress(0)} style={{width: 100, height: 100, backgroundColor: "red"}}/>      
+      <Pressable onPress={() => handleClosePress()} style={{width: 100, height: 100, backgroundColor: "red"}}/>
 
-      </Pressable>
       <BottomSheet
         ref={sheetRef}
-        handleStyle={{backgroundColor: Colors.gray, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderBottomWidth: 1, borderColor: Colors.background}}
-        handleIndicatorStyle={{backgroundColor: Colors.orange}}
-        snapPoints={snapPoints}        
+        index={-1}        
+        handleStyle={{}}
+        handleIndicatorStyle={{display: "none"}}
+        snapPoints={snapPoints}       
+        containerStyle={{marginBottom: 60, paddingBottom: 40}}
         backgroundStyle={{backgroundColor: Colors.gray}}
-        enableDynamicSizing={false}
-        enablePanDownToClose={true}
-        onChange={handleSheetChange}
+        enableDynamicSizing={false}   
+        enableContentPanningGesture={false}
       >
         <View>
-          <BottomSheetFlatList          
-            data={DATA}
-            style={{paddingHorizontal: 20, paddingVertical: 30, marginBottom: 80}}
-            keyExtractor={(i) => i.name}
-            renderItem={({item}) => {return (<BottomSheetItem section={item} />)}}
-            contentContainerStyle={styles.contentContainer}
-          />
-          <Pressable style={{position: 'absolute', right: 20, top: 10}} >
-            <Ionicons name="refresh-circle" size={36} color={Colors.orange} />
-          </Pressable>
+          <BottomSheetScrollView 
+            style={{width: '100%', padding: 20}}
+            keyboardShouldPersistTaps={"handled"}>
+            <View style={{flexDirection: "row", gap: 20, alignItems: "center", justifyContent: "space-between"}} >
+              <Pressable onPress={() => handleClosePress()} hitSlop={AppConstants.hitSlopLarge}>
+                <Ionicons name='close-circle-outline' size={36} color={Colors.orange} />
+              </Pressable>
+              <Pressable onPress={() => handleResetFilters()} hitSlop={AppConstants.hitSlopLarge} >
+                <Ionicons name="refresh-circle-outline" size={36} color={Colors.orange} />
+              </Pressable>
+            </View>
+              <NumberFilter filter={level} setFilter={setLevel} title="Level"/>
+              <NumberFilter filter={attack} setFilter={setAttack} title="Attack"/>
+              <NumberFilter filter={defence} setFilter={setDefence} title="Defence"/>
+              <CategoryFilter filter={archetype} setFilter={setArchetype} items={ARCHETYPES} title="Archetypes" />
+              <CategoryFilter filter={attribute} setFilter={setAttribute} items={ATTRIBUTES} title="Attributes" />
+              <CategoryFilter filter={frametype} setFilter={setFrametype} items={FRAMETYPES} title="Frametypes" />
+              <CategoryFilter filter={race} setFilter={setRace} items={RACES} title="Races" />
+              <CategoryFilter filter={type} setFilter={setType} items={CARD_TYPES} title="Types" />
+              <View style={{width: '100%', height: 40}} ></View>
+          </BottomSheetScrollView>
         </View>
       </BottomSheet>
       

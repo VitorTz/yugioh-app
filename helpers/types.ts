@@ -75,3 +75,15 @@ export interface FetchCardParams {
     options: FetchCardOptions
     page: number
 }
+
+
+export type CardFilter = {
+    [chave: string]: number | string;
+};
+
+export type NumberComp = "Greater" | "Greater or equal" | "Equal"
+
+export type NumberFilterType = {
+    number: string
+    comp: NumberComp | null
+}
