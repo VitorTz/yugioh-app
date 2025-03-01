@@ -10,10 +10,11 @@ interface CategoryFilterProps {
     items: string[]
     filter: string | null
     setFilter: React.Dispatch<React.SetStateAction<string | null>>
+    dismarkWhenPressedAgain: boolean
 }
 
 
-const CategoryFilter = ({title, items, filter, setFilter}: CategoryFilterProps) => {
+const CategoryFilter = ({title, items, filter, setFilter, dismarkWhenPressedAgain}: CategoryFilterProps) => {
     return (
         <View style={styles.container} >
           <Text style={styles.title}>{title}</Text>
@@ -27,6 +28,7 @@ const CategoryFilter = ({title, items, filter, setFilter}: CategoryFilterProps) 
                         item={item} 
                         filter={filter} 
                         setFilter={setFilter}
+                        dismarkWhenPressedAgain={dismarkWhenPressedAgain}
                     />
                 )
                 }

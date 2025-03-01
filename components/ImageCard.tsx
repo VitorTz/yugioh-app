@@ -1,5 +1,6 @@
 import { StyleSheet, View, Pressable, ActivityIndicator } from 'react-native'
 import { getImageHeight, wp, hp } from '@/helpers/util'
+import { Keyboard } from 'react-native'
 import { Image } from 'expo-image'
 import React, { useState } from 'react'
 import { YuGiOhCard } from '@/helpers/types'
@@ -17,6 +18,7 @@ interface ImageCardProps {
 const ImageCard = ({item, index}: ImageCardProps) => {    
     
     const handlePress = () => {
+        Keyboard.dismiss()
         router.push(
             {
                 pathname: "/(pages)/cardPage",
@@ -25,6 +27,7 @@ const ImageCard = ({item, index}: ImageCardProps) => {
                     card_id: item.card_id,
                     archetype: item.archetype,
                     attribute: item.attribute,
+                    level: item.level,
                     race: item.race,
                     frametype: item.frametype,
                     attack: item.attack,

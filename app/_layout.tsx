@@ -1,4 +1,4 @@
-import { View, Text, StatusBar } from 'react-native'
+import { View, StatusBar } from 'react-native'
 import { Stack } from 'expo-router'
 import { Colors } from '@/constants/Colors'
 import { GlobalStateProvider } from '@/context/GlobalContext'

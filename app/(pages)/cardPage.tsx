@@ -9,6 +9,7 @@ import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { AppConstants } from '@/constants/AppConstants'
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
 
 const CardInfo = ({value, title}: {value: any, title: string}) => {
     return (
@@ -65,8 +66,10 @@ const cardPage = () => {
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, padding: 20}} >
             <View style={styles.container} >
-                <Image style={styles.image} source={card.image_url} />
-                <View style={styles.descrContainer}  >
+                <Animated.View entering={FadeInUp.delay(50).duration(600)} >
+                    <Image style={styles.image} source={card.image_url} />
+                </Animated.View>
+                <Animated.View entering={FadeInDown.delay(50).duration(600)} style={styles.descrContainer}  >
                     <Text style={[styles.header, {color: Colors.red}]} >{card.name}</Text>
                     <View style={{width: '100%', marginVertical: 10, flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
                         <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
@@ -89,7 +92,7 @@ const cardPage = () => {
                         <Text style={styles.header} >Description</Text>
                         <Text style={styles.descr} >{card.descr}</Text>
                     </ScrollView>
-                </View>
+                </Animated.View>
             </View>
             <Pressable onPress={() => router.back()} style={[AppStyle.iconButton, {position: 'absolute', right: 20, top: 10}]}  hitSlop={AppConstants.hitSlopLarge} >
                 <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />

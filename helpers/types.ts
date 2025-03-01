@@ -48,20 +48,19 @@ export interface GlobalState {
 export type CARD_STRING_COLUMN = "name" | "attribute" | "archetype" | "frametype" | "type" | "race" | string
 
 export interface FetchCardOptions {
-  name: CARD_STRING_COLUMN | null
-  card_id: number | null
-  
+  name: CARD_STRING_COLUMN | null  
+  page: number 
   attack: number | null
-  attackGE: boolean | null
-  attackGEQ: boolean | null
+  attackEQ: boolean | null
+  attackGE: boolean | null  
 
   defence: number | null
-  defenceGE: boolean | null
-  defenceGEQ: boolean | null
+  defenceEQ: boolean | null
+  defenceGE: boolean | null  
 
   level: number | null
-  levelGE: boolean | null
-  levelGEQ: boolean | null
+  levelEQ: boolean | null
+  levelGE: boolean | null  
 
   attribute: CARD_STRING_COLUMN | null
   archetype: CARD_STRING_COLUMN | null

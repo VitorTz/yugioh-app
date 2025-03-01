@@ -88,10 +88,7 @@ export async function supaFechGlobalContext(session: Session): Promise<GlobalCon
 }
 
 
-export async function supaFetchCards(
-  page: number, 
-  options: FetchCardOptions | null = null
-): Promise<{cards: YuGiOhCard[], error: PostgrestError | null}> {
+export async function supaFetchCards(options: FetchCardOptions): Promise<{cards: YuGiOhCard[], error: PostgrestError | null}> {
   let query = supabase.from('cards').select(`
     card_id,
     name,
@@ -107,26 +104,43 @@ export async function supaFetchCards(
     image_url`  
   )
 
-  if (options && options.card_id) {
-    query = query.eq("card_id", options.card_id)
-    query = query.order("name", {ascending: true}).range(page * CARD_FETCH_LIMIT, (page + 1) * CARD_FETCH_LIMIT)
-    const {data, error} = await query.overrideTypes<YuGiOhCard[]>()
-    return {cards: data ? data : [], error: error}
+  if (options?.name) {
+    query = query.ilike("name", `%${options.name}%`)
   }
 
-  if (options) {
+  if (options?.archetype) {    
+    query = query.eq("archetype", options.archetype)
+  }  
 
-      STRING_COMPS.forEach(
-        (item) => {
-          if (options[item] != null) {
-            console.log(item, options[item])            
-            query = query.ilike(item, `%${options[item]}%`)
-          }
-        }
-      )
+  if (options?.attribute) {    
+    query = query.eq("attribute", options.attribute)
+  }  
+
+  if (options?.frametype) {    
+    query = query.eq("frametype", options.frametype)
+  }  
+
+  if (options?.race) {    
+    query = query.eq("race", options.race)
+  }  
+
+  if (options?.type) {    
+    query = query.eq("type", options.type)
+  }
+  
+  if (options?.attack) {
+    query = query.gte("attack", options.attack)
   }
 
-  query = query.order("name", {ascending: true}).range(page * CARD_FETCH_LIMIT, ((page + 1) * CARD_FETCH_LIMIT) - 1)
+  if (options?.defence) {
+    query = query.gte("defence", options.defence)    
+  }
+
+  if (options?.level) {
+    query = query.gte("level", options.level)    
+  }
+
+  query = query.order("name", {ascending: true}).range(options.page * CARD_FETCH_LIMIT, ((options.page + 1) * CARD_FETCH_LIMIT) - 1)
   const {data, error} = await query.overrideTypes<YuGiOhCard[]>()
   return {cards: data ? data : [], error: error}  
 }

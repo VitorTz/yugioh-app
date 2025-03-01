@@ -8,14 +8,18 @@ interface CategoryItem {
     item: string
     filter: string | null
     setFilter: React.Dispatch<React.SetStateAction<string | null>>
+    dismarkWhenPressedAgain: boolean
 }
 
 
-const CategoryItem = ({item, filter, setFilter}: CategoryItem) => {
+const CategoryItem = ({item, filter, setFilter, dismarkWhenPressedAgain}: CategoryItem) => {
     const color = filter == item ? Colors.red : Colors.background    
+    const handlePress = () => {
+        (filter == item) && dismarkWhenPressedAgain ? setFilter(null) : setFilter(item)
+    }
     return (
         <Pressable 
-            onPress={() => filter == item ? setFilter(null) : setFilter(item)}
+            onPress={() => handlePress()}
             hitSlop={AppConstants.hitSlopLarge}
             style={[styles.itemContainer, {backgroundColor: color}]}>
             <Text style={AppStyle.textRegular}>{item}</Text>

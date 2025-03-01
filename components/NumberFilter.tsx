@@ -2,7 +2,6 @@ import { StyleSheet, Text, TextInput, View } from 'react-native'
 import { NumberFilterType } from '@/helpers/types'
 import { Colors } from '@/constants/Colors'
 import React from 'react'
-import NumberItem from './NumberItem'
 
 
 interface NumberFilterProps {
@@ -14,35 +13,25 @@ interface NumberFilterProps {
 
 const NumberFilter = ({title, filter, setFilter}: NumberFilterProps) => {
 
-    const handleChangeText = (text: string) => {
-        if (text.length > 0 && text.at(0) == '0') {
-            text = text.substring(1)
-        }
+    const handleChangeText = (text: string) => {        
         setFilter({
             number: text,
             comp: filter.comp
         })
     }
-
-    const width = title == "Level" ? 42 : 80
-
+    
     return (
-        <View style={{width: "100%", gap: 10, marginBottom: 10}} >
+        <View style={{gap: 10, marginBottom: 10}} >
         <Text style={styles.header}>{title}</Text>
-        <View style={styles.optionContainer}>
             <TextInput
                 placeholderTextColor={Colors.white}
                 value={filter.number}
                 placeholder="0"
-                maxLength={title == "Level" ? 2 : 5}
+                maxLength={4}
                 keyboardType="numeric"
                 onChangeText={text => handleChangeText(text)}
-                style={[styles.input, {width: width}]}
+                style={[styles.input]}
             />
-            <NumberItem name='Equal' filter={filter} setFilter={setFilter} />
-            <NumberItem name='Greater' filter={filter} setFilter={setFilter} />
-            <NumberItem name='Greater or equal' filter={filter} setFilter={setFilter} />            
-        </View>
         </View>
     )
 }
@@ -58,6 +47,7 @@ const styles = StyleSheet.create({
     input: {        
         paddingLeft: 14, 
         height: 42, 
+        width: 80,
         color: Colors.white, 
         backgroundColor: Colors.background, 
         borderWidth: 1, 
