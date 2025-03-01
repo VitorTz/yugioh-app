@@ -1,37 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { AuthError, createClient, PostgrestError } from '@supabase/supabase-js'
-import { ImageDB, ProfileInfo, YuGiOhCard } from '@/helpers/types'
-import { Platform } from 'react-native'
+import { createClient, PostgrestError, Session } from '@supabase/supabase-js'
+import { ColorDB, GlobalContext, ImageDB, UserDB, YuGiOhCard } from '@/helpers/types'
+import { FetchCardOptions, CARD_STRING_COLUMN } from '@/helpers/types'
 
-const SUPABASE_URL = process.env.EXPO_PUBLIC_API_URL
-const SUPABASE_KEY = process.env.EXPO_PUBLIC_API_KEY
-const CARD_FETCH_LIMIT = Platform.OS === "web" ? 40 : 20
 
-type CARD_STRING_COLUMN = "name" | "attribute" | "archetype" | "frametype" | "type" | "race"
-
-export interface FetchCardOptions {
-  name: CARD_STRING_COLUMN | null
-  card_id: number | null
-  
-  attack: number | null
-  attackGE: boolean | null
-  attackGEQ: boolean | null
-
-  defence: number | null
-  defenceGE: boolean | null
-  defenceGEQ: boolean | null
-
-  level: number | null
-  levelGE: boolean | null
-  levelGEQ: boolean | null
-
-  attribute: CARD_STRING_COLUMN | null
-  archetype: CARD_STRING_COLUMN | null
-  frametype: CARD_STRING_COLUMN | null
-  type: CARD_STRING_COLUMN | null
-  race: CARD_STRING_COLUMN | null 
-}
-
+const SUPABASE_URL = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL : ""
+const SUPABASE_KEY = process.env.EXPO_PUBLIC_API_KEY ? process.env.EXPO_PUBLIC_API_KEY : ""
+const CARD_FETCH_LIMIT = 60
 
 
 const STRING_COMPS: CARD_STRING_COLUMN[] = [
@@ -53,36 +28,63 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   },
 })
 
-export async function supaFetchUserProfileInfo(user_id: string): Promise<{userInfo: ProfileInfo | null}> {    
-    const {data, error} = await supabase.from("users").select("name, image_id, images (image_url)").eq("user_id", user_id).single()
-    if (error) {
-      return {userInfo: null}
-    }
-  
-    return {
-      userInfo: {
+export async function supaFetchUser(user_id: string): Promise<UserDB | null> {  
+    const {data, error} = await supabase.from(
+      "users"
+    ).select(`
+      user_id,
+      name, 
+      image_id,
+      accent_color, 
+      base_color,
+      images (image_url)`
+    ).eq("user_id", user_id).single().overrideTypes<UserDB>()    
+    if (error) { return null }    
+    return {      
+        user_id: data.user_id,
         name: data.name,
-        profilePhoto: {
-            imageId: data.image_id,
-            imageUrl: data.images.image_url
-        }        
-      }
+        image: {
+          image_id: data.image_id,
+          image_url: data.images.image_url
+        },        
+        accent_color: data.accent_color,
+        base_color: data.base_color
     }
   }
   
 
-export async function supaFetchProfileIcons(): Promise<{allProfileIcons: ImageDB[]}> {
-  const {data, error} = await supabase.from("profile_icons").select("image_id, images (image_url)")  
-  if (data) {
-    const icons: ImageDB[] = data.map(
-      (item) => {return {imageId: item.image_id, imageUrl: item.images.image_url}}
-    )
-    return {allProfileIcons: icons}
+export async function supaFetchProfileIcons(): Promise<ImageDB[]> {
+  const {data, error} = await supabase.from("profile_icons").select("image_id, images (image_url)").overrideTypes<ImageDB[]>()
+  if (!data) { return [] }
+  return data.map(
+    (item) => {
+      return {
+        image_id: item.image_id,
+        image_url: item.images.image_url
+      }
+    }
+  )
+}
+
+
+export async function supaFetchColors(): Promise<ColorDB[]> {  
+  const {data, error} = await supabase.from("colors").select("name, hex_value").overrideTypes<ColorDB[]>()  
+  return data ? data : []
+}
+
+
+export async function supaFechGlobalContext(session: Session): Promise<GlobalContext | null> {
+  if (!session) { return null }
+  const user = await supaFetchUser(session.user.id)    
+  if (!user) { return null }  
+  const colors = await supaFetchColors()
+  const icons = await supaFetchProfileIcons()
+  return {
+    user: user,
+    colors: colors,
+    profileIcons: icons,
+    session: session
   }
-  if (error) {
-    console.log(error.message)
-  }
-  return {allProfileIcons: []}
 }
 
 
@@ -112,19 +114,19 @@ export async function supaFetchCards(
     return {cards: data ? data : [], error: error}
   }
 
-
   if (options) {
 
       STRING_COMPS.forEach(
         (item) => {
           if (options[item] != null) {
-            query = query.ilike(item, options[item])
+            console.log(item, options[item])            
+            query = query.ilike(item, `%${options[item]}%`)
           }
         }
       )
   }
 
-  query = query.order("name", {ascending: true}).range(page * CARD_FETCH_LIMIT, (page + 1) * CARD_FETCH_LIMIT)
+  query = query.order("name", {ascending: true}).range(page * CARD_FETCH_LIMIT, ((page + 1) * CARD_FETCH_LIMIT) - 1)
   const {data, error} = await query.overrideTypes<YuGiOhCard[]>()
   return {cards: data ? data : [], error: error}  
 }

@@ -1,11 +1,11 @@
-import { StyleSheet, ActivityIndicator, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, ActivityIndicator, View } from 'react-native'
 import { Colors } from '@/constants/Colors'
+import React from 'react'
 
 
 const PageActivityIndicator = () => {
   return (
-    <View style={{alignItems: "center", justifyContent: "center", flex: 1}} >
+    <View style={{flex: 1, alignItems: "center", justifyContent: "center"}} >
         <ActivityIndicator size={64} color={Colors.white} /> 
     </View>
   )

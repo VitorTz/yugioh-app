@@ -1,16 +1,12 @@
-import { 
-    ActivityIndicator, 
-    Pressable, 
+import {     
     SafeAreaView, 
-    StyleSheet, 
-    Text, 
-    View, 
+    StyleSheet,     
     AppState 
 } from 'react-native'
 import AppStyle from '@/constants/AppStyle'
-import { supabase, supaFetchProfileIcons, supaFetchUserProfileInfo } from '@/lib/supabase'
+import { supabase, supaFechGlobalContext } from '@/lib/supabase'
 import { router } from 'expo-router'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import {
     useFonts,
     LeagueSpartan_100Thin,
@@ -24,10 +20,6 @@ import {
     LeagueSpartan_900Black,
 } from '@expo-google-fonts/league-spartan';
 import { useGlobalState } from '@/context/GlobalContext'
-import { Colors } from '@/constants/Colors';
-import { sleep } from '@/helpers/sleep'
-import Toast from 'react-native-toast-message'
-import { showToast } from '@/helpers/util'
 import PageActivityIndicator from '@/components/PageActivityIndicator'
 
 
@@ -56,33 +48,12 @@ const index = () => {
         LeagueSpartan_900Black,
     });
 
-
-    const logoutUser = async () => {
-        const {error} = await supabase.auth.signOut()
-        setContext(null)
-        router.replace("/(auth)/signin")
-    } 
-
     const initApp = async () => {        
         const {data: {session}} = await supabase.auth.getSession()
         if (session) {
-            const { userInfo } = await supaFetchUserProfileInfo(session.user.id)
-            const { allProfileIcons } = await supaFetchProfileIcons()            
-            if (userInfo == null) {
-                showToast("Error", "could not retrive user profile info, login out", "error")
-                await sleep(2000)
-                logoutUser()
-                return
-            }            
-            setContext(
-                {
-                    session: session,
-                    user: session.user,
-                    profileInfo: userInfo,
-                    allProfileIcons: allProfileIcons
-                }
-            )            
-            await sleep(200)
+            console.log("user has session")
+            const globalContext = await supaFechGlobalContext(session)
+            setContext(globalContext)
             router.replace("/(tabs)/database")
         } else {
             router.replace("/(auth)/signin")
@@ -100,8 +71,7 @@ const index = () => {
 
     return (        
         <SafeAreaView style={AppStyle.safeArea} >
-            <PageActivityIndicator/>
-            <Toast/>
+            <PageActivityIndicator/>            
         </SafeAreaView>        
     )
 }

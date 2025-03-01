@@ -34,7 +34,7 @@ const ProfileOption = ({
     <Animated.View entering={FadeInLeft.delay((index + 1) * 50).duration(700)} >
         <Pressable style={styles.profileOption} onPress={handlePress} >
         <View style={{flexDirection: "row", gap: 20, alignItems: "center"}} >
-            <Ionicons name={iconName} size={AppConstants.icon.size} color={AppConstants.icon.color} />
+            <Ionicons name={iconName} size={AppConstants.icon.size} color={"white"} />
             <View>
             <Text style={styles.profileOptionText} >{title}</Text>
             {
@@ -45,10 +45,10 @@ const ProfileOption = ({
         </View>
         {
             loading ? 
-            <ActivityIndicator size={AppConstants.icon.size} color={AppConstants.icon.color} />
+            <ActivityIndicator size={AppConstants.icon.size} color={"white"} />
             :
             <Pressable>
-                <Ionicons name='chevron-forward-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
+                <Ionicons name='chevron-forward-outline' size={AppConstants.icon.size} color={"white"} />
             </Pressable>                  
         }
         </Pressable>
@@ -66,12 +66,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
     },
     profileOptionText: {
-    color: Colors.text, 
+    color: Colors.white, 
     fontSize: 20, 
     fontFamily: "LeagueSpartan_400Regular"
     },
     profileOptionTextDesc: {
-    color: Colors.text, 
+    color: Colors.white, 
     fontSize: 14, 
     fontFamily: "LeagueSpartan_400Regular"
     }

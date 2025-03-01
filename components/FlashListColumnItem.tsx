@@ -14,6 +14,7 @@ const getItemStyle = (index: number, numColumns: number) => {
   } as const;
 };
 
+
 type ColumnItemProps = ViewProps & {
   children: React.ReactNode;
   index: number;
@@ -21,8 +22,12 @@ type ColumnItemProps = ViewProps & {
 };
 
 
-export const ColumnItem = ({ children, index, numColumns, ...rest }: ColumnItemProps) => (
-    <View style={StyleSheet.flatten([getItemStyle(index, numColumns),rest.style])} {...rest}>
+export const ColumnItem = ({ children, index, numColumns}: ColumnItemProps) => {  
+  return (
+    <View style={
+      [StyleSheet.flatten([getItemStyle(index, numColumns)]), {marginTop: index >= numColumns ? 10 : 0}]
+    }>
       {children}
-    </View>
-);
+    </View> 
+  );
+}

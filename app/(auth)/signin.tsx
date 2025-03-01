@@ -18,7 +18,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useGlobalState } from '@/context/GlobalContext';
 import { router } from 'expo-router';
-import { supabase, supaFetchProfileIcons, supaFetchUserProfileInfo } from '@/lib/supabase';
+import { supabase, supaFechGlobalContext, supaFetchProfileIcons, supaFetchUser } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { showToast } from '@/helpers/util'
 import { sleep } from '@/helpers/sleep'
@@ -69,36 +69,30 @@ const SignIn = () => {
         }
       )
 
-      setLoading(false)
-
+      
       if (error) {
         showToast("Error", error.message, "error")        
+        setLoading(false)
         return
       }
       
       const {data: {session}} = await supabase.auth.getSession()
       if (session) {
-        const { userInfo } = await supaFetchUserProfileInfo(session.user.id)          
-        const { allProfileIcons } = await supaFetchProfileIcons()
-        if (userInfo == null) {
-          showToast("Error", "could not retrieve user profile info", "error")
-          await sleep(2000)
+        const globalContext = await supaFechGlobalContext(session)
+        if (globalContext == null) {
+          showToast("Error", "could not retrieve user profile info", "error")          
           return
         }
-        setContext(
-          {
-            session: session,
-            user: session.user,
-            profileInfo: userInfo,
-            allProfileIcons: allProfileIcons
-          }
-        )
-        showToast("Success", `Welcome, ${userInfo.name}`, "success")
+        setContext(globalContext)
+        showToast("Success", `Welcome, ${globalContext.user.name}`, "success")
+        setLoading(false)
         await sleep(2000)
         router.replace("/(tabs)/database")
+        return
       } else {
         showToast("Error", "could not retrive login session", "error")
       }
+      setLoading(false)
         
   };
 

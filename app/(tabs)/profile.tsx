@@ -14,34 +14,21 @@ import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated'
 import { AppConstants } from '@/constants/AppConstants'
 import ProfileOption from '@/components/ProfileOption'
 import PageActivityIndicator from '@/components/PageActivityIndicator'
+import { ImageDB } from '@/helpers/types'
+import ProfileIcon from '@/components/ProfileIcon'
 
+
+interface OnPressMap {
+  [key: string]: () => void
+}
 
 const Profile = () => {
   const {context, setContext} = useGlobalState()  
   const [waitingForSession, setWaitingForSession] = useState(true)  
-  const username = context ? context.profileInfo.name : ""
+  const username: string | undefined = context?.user.name
+  const userImage: ImageDB | undefined = context?.user.image  
+  const userAccentColor: string | undefined = context?.user.accent_color  
   
-  const ProfileIcon = () => {
-    return (
-      <>
-      {        
-        context ?
-        <Image
-          style={styles.image}
-          source={context.profileInfo.profilePhoto.imageUrl}
-          contentFit="cover"
-        /> 
-        :
-        <Ionicons 
-          size={128} 
-          color={AppConstants.icon.color} 
-          name='person-circle' 
-        />
-      }
-      </>
-    )
-  }
-
   useEffect(
     () => {
       if (context == null) {
@@ -65,7 +52,7 @@ const Profile = () => {
     setContext(null)
   }
 
-  const onPressMap = {
+  const onPressMap: OnPressMap = {
     Profile: async () => router.navigate("/(pages)/profileInfo"),
     Settings: async () => console.log("settings"),
     Github: async () => Linking.openURL(AppConstants.githubUrl),
@@ -75,24 +62,6 @@ const Profile = () => {
   const ProfilePage = () => {
     return (
       <View style={[AppStyle.backdrop]} >
-
-        {/* Profile icon and name */}
-        <Animated.View entering={FadeInUp.delay(50).duration(700)}  style={{alignItems: "center", justifyContent: "center"}} >  
-          {/* Profile Icon */}
-          <View style={{marginTop: 20, marginBottom: 10}}>              
-            <ProfileIcon/>
-            {/* Change profile icon button */}
-            <Pressable onPress={() => router.navigate("/(pages)/profilePhoto")} style={styles.brush} >
-              <Ionicons name='pencil-outline' size={20} color={AppConstants.icon.color} />
-            </Pressable>
-          </View> 
-
-          {/* Profile Name */}
-          <Text style={AppStyle.textUserName}>
-            {username}
-          </Text>
-        </Animated.View>          
-        
         <ScrollView>
           <View style={styles.optionsView} >
             {
@@ -114,6 +83,23 @@ const Profile = () => {
           </View>
         </ScrollView>
 
+        {/* Profile icon and name */}
+        <Animated.View entering={FadeInUp.delay(50).duration(700)}  style={{position: 'absolute', top: -60, alignItems: "center", justifyContent: "center"}} >  
+          {/* Profile Icon */}
+          <View style={{marginTop: 20, marginBottom: 10}}>              
+            <ProfileIcon image={userImage} accentColor={Colors.background} />
+            {/* Change profile icon button */}
+            <Pressable onPress={() => router.navigate("/(pages)/profilePhoto")} style={styles.brush} hitSlop={AppConstants.hitSlopLarge} >
+              <Ionicons name='pencil-outline' size={20} color={"white"} />
+            </Pressable>
+          </View> 
+
+          {/* Profile Name */}
+          <Text style={AppStyle.textUserName}>
+            {username}
+          </Text>
+        </Animated.View>
+
       </View>
     )
   }
@@ -128,12 +114,7 @@ const Profile = () => {
 
 export default Profile
 
-const styles = StyleSheet.create({
-  image: {
-    width: 128,
-    height: 128,
-    borderRadius: 128        
-  },
+const styles = StyleSheet.create({  
   brush: {    
     position: 'absolute',
     width: 32,
@@ -145,15 +126,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background, 
     borderWidth: 1, 
     borderColor: Colors.white,
-    right: 0,
-    bottom: 0
+    bottom: 0,  
+    right: 0
   },
   optionsView: {
     width: '100%', 
     gap: 30, 
     alignItems: "center", 
     justifyContent: "center", 
-    marginTop: 20, 
+    marginTop: 120, 
     paddingHorizontal: 10
   }
 })

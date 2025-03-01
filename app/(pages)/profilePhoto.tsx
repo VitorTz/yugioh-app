@@ -14,37 +14,40 @@ import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
 import { AppConstants } from '@/constants/AppConstants'
 import { FlashList } from "@shopify/flash-list"
 import { ColumnItem } from '@/components/FlashListColumnItem'
+import ProfileIcon from '@/components/ProfileIcon'
+import { FlatList } from 'react-native-reanimated/lib/typescript/Animated'
 
 
 const profilePhoto = () => {
 
     const {context, setContext} = useGlobalState()        
-    const [loading, setLoading] = useState<boolean>(false)
-    const [tempProfileIcon, setTempProfileIcon] = useState<ImageDB | null>(
-        context ? context.profileInfo.profilePhoto : null
-    )     
+    const [loading, setLoading] = useState<boolean>(false)    
+    const [tempProfileIcon, setTempProfileIcon] = useState<ImageDB | undefined>(context?.user.image)
+    const [tempAccentColor, setTempAccentColor] = useState<string | undefined>(context?.user.accent_color)
 
     const handleSave = async () => {
         setLoading(true)
-        if (context && tempProfileIcon) {                        
-            const {data, error} = await supabase.from("users").update({"image_id": tempProfileIcon.imageId}).eq("user_id", context.user.id).select()
+        if (context && tempProfileIcon && tempAccentColor) {
+            const {data, error} = await supabase.from("users").update(
+                {"image_id": tempProfileIcon.image_id, "accent_color": tempAccentColor}
+            ).eq("user_id", context.user.user_id).select()
             if (error) {
                 showToast("Error", error.message, "error")
-            }
-            if (data) {
-                showToast("Success", "Profile icon changed", "success")
-                setContext(
-                    {
-                        session: context.session,
-                        user: context.user,
-                        profileInfo: {
-                            name: context.profileInfo.name,
-                            profilePhoto: tempProfileIcon
-                        },
-                        allProfileIcons: context.allProfileIcons
-                    }
-                )            
-            }
+                setLoading(false)
+                return
+            }            
+            showToast("Success", "Profile icon changed", "success")                
+            context.user.image = tempProfileIcon
+            context.user.accent_color = tempAccentColor
+            setContext(
+                {
+                    session: context.session,
+                    user: context.user,
+                    colors: context.colors,
+                    profileIcons: context.profileIcons
+                }
+            )
+
         }
         setLoading(false)
     }
@@ -54,7 +57,7 @@ const profilePhoto = () => {
             <Animated.View entering={FadeInDown.delay(index * 50).duration(600)} >
                 <Pressable onPress={() => setTempProfileIcon(item) }>
                     <Image 
-                        source={item.imageUrl} 
+                        source={item.image_url} 
                         contentFit='cover' 
                         style={styles.listImage}/>
                 </Pressable>
@@ -86,18 +89,13 @@ const profilePhoto = () => {
             </View>
 
             <View style={[AppStyle.backdrop, {marginTop: 30}]}>
-                <Animated.View entering={FadeInUp.delay(400).duration(500)} style={{marginBottom: 40}} >
-                    {
-                        tempProfileIcon ? 
-                        <Image source={tempProfileIcon.imageUrl} style={styles.image} />
-                        :
-                        <Ionicons name='person-circle-outline' size={128} color={Colors.orange} />
-                    }
-                </Animated.View>                
-                <View style={{height: 200, width: '100%'}} >
+                <View style={{position: 'absolute', top: -50}} >
+                    <ProfileIcon image={tempProfileIcon} accentColor={tempAccentColor} />
+                </View>                
+                <View style={{height: '100%', width: '100%', paddingTop: 70}} >
                     <FlashList                                                
                         numColumns={3}
-                        data={context ? context.allProfileIcons :  []}
+                        data={context ? context.profileIcons :  []}
                         renderItem={
                             ({item, index}) => {
                                 return (
@@ -107,7 +105,7 @@ const profilePhoto = () => {
                                 )
                             }
                         }
-                        keyExtractor={(item) => item.imageUrl}
+                        keyExtractor={(item) => item.image_url}
                         estimatedItemSize={200}
                     />
                 </View>
@@ -124,7 +122,10 @@ const styles = StyleSheet.create({
     image: {
         width: 128,
         height: 128,
-        borderRadius: 128        
+        borderRadius: 128,
+        borderWidth: 1,
+        borderColor: Colors.white,
+        borderCurve: "continuous"
     },
     listImage: {
         width: 96, 

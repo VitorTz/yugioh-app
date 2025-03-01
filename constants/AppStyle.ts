@@ -1,11 +1,12 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "./Colors";
-import { hp } from "@/helpers/util";
+import { hp, wp } from "@/helpers/util";
 
 
 const AppStyle = StyleSheet.create({
     safeArea: {
-        flex: 1, 
+        width: wp(100),
+        height: hp(100),
         alignItems: "center",        
         backgroundColor: Colors.background, 
         paddingTop: 20,
@@ -30,8 +31,10 @@ const AppStyle = StyleSheet.create({
     },
     iconButton: {
         padding: 10, 
-        backgroundColor: Colors.gray, 
-        borderRadius: 32
+        backgroundColor: Colors.background,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: Colors.orange
     },
     backdrop: {
         backgroundColor: Colors.gray,         
@@ -42,7 +45,7 @@ const AppStyle = StyleSheet.create({
         padding: 10,
         paddingVertical: 20,
         borderCurve: "continuous",
-        borderRadius: 12
+        borderRadius: 32
     },
     textUserName: {
         color: Colors.text, 

@@ -1,12 +1,12 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { GlobalState } from '@/helpers/types';
+import { GlobalContext, GlobalState } from '@/helpers/types';
 
 
 const GlobalStateContext = createContext<GlobalState | undefined>(undefined);
 
 
 export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
-    const [context, setContext] = useState(null);
+    const [context, setContext] = useState<GlobalContext | null | undefined>(null);
 
     return (
         <GlobalStateContext.Provider value={{ context, setContext }}>

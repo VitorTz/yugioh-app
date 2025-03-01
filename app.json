@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "rn-tabbar-template",
-    "slug": "rn-tabbar-template",
+    "name": "ygo-app",
+    "slug": "ygo-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
