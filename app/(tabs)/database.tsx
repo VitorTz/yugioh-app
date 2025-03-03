@@ -1,89 +1,173 @@
-import { TextInput, NativeScrollEvent, Pressable, SafeAreaView, StyleSheet, Text, View, KeyboardAvoidingView, Keyboard, Platform } from 'react-native'
+import { TextInput, NativeScrollEvent, Pressable, SafeAreaView, StyleSheet, Text, View, KeyboardAvoidingView, Keyboard, Platform, ActivityIndicator } from 'react-native'
 import AppStyle from '@/constants/AppStyle'
 import React, { useEffect, useState, useRef, useMemo } from 'react'
-import { supabase, supaFetchCards } from '@/lib/supabase'
-import { FetchCardOptions, YuGiOhCard } from '@/helpers/types'
+import { supabase, supaFetchCards, supaFetchDecks } from '@/lib/supabase'
+import { CardOrderBy, FetchCardOptions, Filter, Order, YuGiOhCard } from '@/helpers/types'
 import { useCallback } from 'react'
 import {at, debounce} from 'lodash'
 import ImageGrid from '@/components/ImageGrid'
 import { Colors } from '@/constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import BottomSheet, { BottomSheetFlatList, BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { AppConstants, ARCHETYPES, ATTRIBUTES, CARD_TYPES, DECK_TYPES, FRAMETYPES, RACES } from "@/constants/AppConstants";
-import { NumberFilterType } from "@/helpers/types";
+import { AppConstants, ARCHETYPES, ATTRIBUTES, CARD_ORDER_BY_OPTIONS, CARD_TYPES, DECK_TYPES, FRAMETYPES, ORDER_OPTIONS, RACES } from "@/constants/AppConstants";
 import NumberFilter from "@/components/NumberFilter";
-import CategoryFilter from "@/components/CategoryFilter";
+import FilterComponent from "@/components/CategoryFilter";
 import { wp, hp } from '@/helpers/util'
+import { FlatList } from 'react-native'
 
 
-var options: FetchCardOptions = {
-  page: 0,
-  name: null,
-  archetype: null,
-  frametype: null,
+var cardOptions = new Map<string, string | null | string[]>()
+var deckOptions = new Map<string, string | null | string[]>()
+var cardSearchText: string | null = null
+var deckSearchText: string | null = null
+var cardPage: number = 0
+var deckPage: number = 0
+var endReached = false
 
-  race: null,
-  type: null,
-  attribute: null,
+resetCardFilter()
+resetDeckFilter()
 
-  level: null,
-  levelEQ: null,
-  levelGE: null,
 
-  attack: null,
-  attackEQ: null,
-  attackGE: null,
-
-  defence: null,
-  defenceEQ: null,
-  defenceGE: null
+function resetCardFilter() {
+  cardOptions.set('archetype', null)
+  cardOptions.set('attribute', null)
+  cardOptions.set('frametype', null)
+  cardOptions.set('race', null)
+  cardOptions.set('type', null)
+  cardOptions.set('attack', null)
+  cardOptions.set('defence', null)
+  cardOptions.set('level', null)
+  cardOptions.set('orderBy', 'name')
+  cardOptions.set('order', 'ASC')
 }
 
-var endReached = false
+function resetDeckFilter() {
+  deckOptions.set('archetypes', [])
+  deckOptions.set('attributes', [])
+  deckOptions.set('frametypes', [])
+  deckOptions.set('races', [])
+  deckOptions.set('types', [])
+  deckOptions.set('avg_attack', null)
+  deckOptions.set('avg_defence', null)
+  deckOptions.set('avg_level', null)
+}
 
 const Database = () => {
   
   const [images, setImages] = useState<YuGiOhCard[]>([])
   const [isLoading, setLoading] = useState(false)  
   const [hasResult, setHasResults] = useState(true)      
-  
+  const textRef = useRef<TextInput>(null)
+
   // BottomSheett
   const sheetRef = useRef<BottomSheet>(null);  
   const snapPoints = useMemo(() => ["75%"], []);
   // Filters
+  const [filterType, setFilterType] = useState<"Deck" | "Card">("Card")
+
+  // Card Filters
   const [archetype, setArchetype] = useState<string | null>(null)
   const [attribute, setAttribute] = useState<string | null>(null)
   const [frametype, setFrametype] = useState<string | null>(null)
   const [race, setRace] = useState<string | null>(null)
   const [type, setType] = useState<string | null>(null)
-  const [level, setLevel] = useState<NumberFilterType>({number: '', comp: null})
-  const [attack, setAttack] = useState<NumberFilterType>({number: '', comp: null})
-  const [defence, setDefence] = useState<NumberFilterType>({number: '', comp: null})  
-  const [deckOrCard, setDeckOrCard] = useState<string | null>("Card")
-  const [deckType, setDeckType] = useState<string | null>("Structure")
+  const [level, setLevel] = useState<string | null>(null)
+  const [attack, setAttack] = useState<string | null>(null)
+  const [defence, setDefence] = useState<string | null>(null)
+  const [orderBy, setOrderBy] = useState<CardOrderBy>('name')
+  const [order, setOrder] = useState<Order>("ASC")
+  
+  // Deck Filters
+  const [deckType, setDeckType] = useState<"Structure" | "Starter" | "Speed Duel" | "Community" | "Any">("Structure")
+  const [deckArchetypes, setDeckArchetypes] = useState<any[]>([])
+  const [deckAttributes, setDeckAttributes] = useState<any[]>([])
+  const [deckFrametypes, setDeckFrametypes] = useState<any[]>([])
+  const [deckRaces, setDeckRaces] = useState<any[]>([])
+  const [deckTypes, setDeckTypes] = useState<any[]>([])
+  const [deckAvgAttack, setDeckAvgAttack] = useState<string | null>(null)
+  const [deckAvgDefence, setDeckAvgDefence] = useState<string | null>(null)
+  const [deckAvgLevel, setDeckAvgLevel] = useState<string | null>(null)  
+
+  
+  
+
+  const activeCardFilters = [
+    filterType.toLowerCase(),
+    order == "ASC" ? "ascending order" : "descending order",
+    `sorting by: ${orderBy}`,
+    archetype,
+    attribute,
+    frametype,
+    race,
+    type,
+    attack ? `attack >= ${attack}` : null,
+    defence ? `defence >= ${defence}` : null,
+    level ? `level >= ${level}` : null
+  ].filter((value: string | null) => value != null)
+
+  const activeDeckFilters = [
+    filterType.toLowerCase(),    
+    deckArchetypes ? `archetypes: ${deckArchetypes.join(", ")}` : null,
+    deckAttributes ? `attributes: ${deckAttributes.join(", ")}` : null,
+    deckFrametypes ? `frametypes ${deckFrametypes.join(", ")}` : null,
+    deckRaces ? `races: ${deckRaces.join(", ")}` : null,
+    deckTypes ? `card types: ${deckTypes.join(", ")}` : null,
+    deckAvgAttack ? `average attack >= ${deckAvgAttack}` : null,
+    deckAvgDefence ? `average defence >= ${deckAvgDefence}` : null,
+    deckAvgLevel ? `average level >= ${deckAvgLevel}` : null
+  ].filter((value: string | null) => value != null)
+
+  const activeFilters = filterType == "Card" ? activeCardFilters : activeDeckFilters
   
   const fetchCards = async (append: boolean = false) => {
     setLoading(true)
-    const {cards, error} = await supaFetchCards(options)    
-    setHasResults(cards.length > 0)
-    if (cards) {
-      options.page += 1
-      append ? setImages([...images, ...cards]) : setImages([...cards])
-    }    
+      console.log("card page", cardPage)
+      const {cards, error} = await supaFetchCards(cardSearchText, cardOptions, cardPage)      
+      setHasResults(cards.length > 0)
+      if (cards) {      
+        append ? setImages([...images, ...cards]) : setImages([...cards])
+      }    
+    setLoading(false)
+  }
+
+  const fetchDecks = async (append: boolean = false) => {
+    setLoading(true)
+    
     setLoading(false)
   }
 
   useEffect(() => { 
-      options.page = 0
+      cardPage = 0
+      deckPage = 0
+      textRef.current?.clear()      
       fetchCards()
     }, 
     []
   )
 
-  const handleSearch = async (text: string | null) => {    
-    options.page = 0
-    options.name = text ? text : null    
-    await fetchCards()    
+  useEffect(
+    () => {
+
+    },
+    [filterType]
+  )
+
+  const handleSearch = async (text: string | null, append: boolean = false) => {
+    const s: string | null = text ? text : null
+    switch (filterType) {
+      case "Card":
+        cardSearchText = s
+        cardPage = append ? cardPage + 1 : 0
+        await fetchCards()
+        break
+      case "Deck":
+        deckSearchText = s
+        deckPage = append ? deckPage + 1 : 0
+        await fetchDecks()
+        break
+      default:
+        break
+    }    
   }
 
   const debounceSearch = useCallback(
@@ -101,55 +185,78 @@ const Database = () => {
     Keyboard.dismiss()
   }, []);
 
-  const handleResetFilters = async () => {    
-    console.log("oi")
+  const handleResetFilters = async () => {     
     handleClosePress()
-    setArchetype(null)
-    setAttribute(null)
-    setFrametype(null)
-    setRace(null)
-    setType(null)
-    setLevel({number: '', comp: null})
-    setAttack({number: '', comp: null})
-    setDefence({number: '', comp: null})    
-    options.page = 0
-    options.archetype = null
-    options.attribute = null
-    options.frametype = null
-    options.type = null
-    options.race = null
-    options.level = null
-    options.attack = null
-    options.defence = null
-    fetchCards()
+    switch (filterType) {
+      case "Card":
+        setArchetype(null)
+        setAttribute(null)
+        setFrametype(null)
+        setRace(null)
+        setType(null)
+        setLevel(null)
+        setAttack(null)
+        setDefence(null)
+        setOrder("ASC")
+        setOrderBy("name")
+        resetCardFilter()    
+        cardPage = 0
+        await fetchCards()
+        break
+    }
   }  
 
-  const handleScroll = async (event: NativeScrollEvent) => {    
-    const height = event.contentSize.height
-    const scrollViewHeight = event.layoutMeasurement.height
-    const scrollOffset = event.contentOffset.y
-    const bottomPosition = height - scrollViewHeight    
-    if (!endReached && scrollOffset + 40 >= bottomPosition) {
-      console.log("i")
-        endReached = true
-        await fetchCards(true)
-        endReached = false
-    }  
+  const applyFilter = async () => {
+    handleClosePress()
+    switch (filterType) {
+      case "Card":
+        cardPage = 0
+        cardOptions.set('archetype', archetype)
+        cardOptions.set('attribute', attribute)
+        cardOptions.set('frametype', frametype)
+        cardOptions.set('race', race)
+        cardOptions.set('type', type)
+        cardOptions.set('attack', attack)
+        cardOptions.set('defence', defence)
+        cardOptions.set('level', level)
+        cardOptions.set('orderBy', orderBy)
+        cardOptions.set('order', order)
+        await fetchCards()
+        break
+      case "Deck":
+        deckPage = 0
+        break
+    }    
   }
 
-  const applyFilter = async () => {
-    options.page = 0
-    options.archetype = archetype
-    options.attribute = attribute
-    options.frametype = frametype
-    options.type = type
-    options.race = race
-    options.level = level.number != '' ? parseInt(level.number) : null
-    options.attack = attack.number != '' ? parseInt(attack.number) : null
-    options.defence = defence.number != '' ? parseInt(defence.number) : null
-    handleClosePress()
-    await fetchCards()
+  const handleEndReached = useCallback(async () => {
+    if (!isLoading && hasResult) {      
+      console.log("end")
+      cardPage += 1
+      await fetchCards(true)
+    }
+  }, [isLoading]);
+
+  const ActiveFiltersComponent = () => {
+    
+    return (
+      <View style={{alignSelf: "flex-start", width: '100%', marginBottom: 10}} >
+        <FlatList
+            data={activeFilters}
+            keyExtractor={item => item}
+            horizontal={true}
+            renderItem={({item, index}) => {
+              return (
+                  <View key={item} style={{paddingHorizontal: 16, paddingVertical: 8, marginRight: 10, backgroundColor: Colors.orange, borderRadius: 4}} >
+                    <Text style={AppStyle.textRegular} >{item}</Text>
+                  </View>
+              )
+            }}
+        />  
+      </View>
+    )
   }
+
 
   return (
     <SafeAreaView style={styles.safeArea}>      
@@ -157,6 +264,7 @@ const Database = () => {
       <View style={{width: '100%', height: '100%', paddingHorizontal: 20, paddingVertical: 10}} >
         <View style={{width: '100%', marginBottom: 10}} >
           <TextInput
+              ref={textRef}
               placeholder='search'
               placeholderTextColor={Colors.white}    
               onChangeText={debounceSearch}
@@ -164,14 +272,19 @@ const Database = () => {
           />
           <View style={{position: 'absolute', right: 10, top: 0, bottom: 0, alignItems: "center", justifyContent: "center"}}>
             <Pressable onPress={() => handleSnapPress(0)} hitSlop={AppConstants.hitSlopLarge}>
+              {
+                isLoading ? 
+                <ActivityIndicator size={28} color={Colors.orange} /> :
                 <Ionicons size={28} color={Colors.orange} name="options-outline"></Ionicons>            
+              }
             </Pressable>
           </View>
         </View>
+        <ActiveFiltersComponent/>
         <ImageGrid 
           isLoading={isLoading} 
           images={images} 
-          onScroll={handleScroll} 
+          onEndReached={handleEndReached}
           hasResult={hasResult}/>
       </View>
       
@@ -200,22 +313,24 @@ const Database = () => {
                     </Pressable>
                   </View>
                 </View>
-                  <View style={{marginTop: 20, flexDirection: "row", width: '100%', alignItems: "center", justifyContent: "space-between"}}>
-                    <NumberFilter filter={attack} setFilter={setAttack} title="Attack"/>
-                    <NumberFilter filter={defence} setFilter={setDefence} title="Defence"/>
-                    <NumberFilter filter={level} setFilter={setLevel} title="Level"/>
+                  <View style={{width: '100%', flexDirection: "row", alignItems: "center", justifyContent: "space-between"}} >
+                    <NumberFilter number={attack} setNumber={setAttack} title='Attack' maxLenght={4} />
+                    <NumberFilter number={defence} setNumber={setDefence} title='Defence' maxLenght={4} />
+                    <NumberFilter number={level} setNumber={setLevel} title='Level' maxLenght={1} />
                   </View>
-                  <CategoryFilter filter={deckOrCard} setFilter={setDeckOrCard} items={["Deck", "Card"]} title="Deck/Card" dismarkWhenPressedAgain={false}/>
+                  <FilterComponent selected={filterType} setSelected={setFilterType} items={["Deck", "Card"]} title="Deck/Card" dismarkWhenPressedAgain={false}/>
                   {
-                    deckOrCard == "Deck" && 
-                    <CategoryFilter filter={deckType} setFilter={setDeckType} items={DECK_TYPES} title='Deck type' dismarkWhenPressedAgain={false}/>
-                  }
-                  
-                  <CategoryFilter filter={archetype} setFilter={setArchetype} items={ARCHETYPES} title="Archetypes" dismarkWhenPressedAgain={true} />
-                  <CategoryFilter filter={attribute} setFilter={setAttribute} items={ATTRIBUTES} title="Attributes" dismarkWhenPressedAgain={true} />
-                  <CategoryFilter filter={frametype} setFilter={setFrametype} items={FRAMETYPES} title="Frametypes" dismarkWhenPressedAgain={true} />
-                  <CategoryFilter filter={race} setFilter={setRace} items={RACES} title="Races" dismarkWhenPressedAgain={true} />
-                  <CategoryFilter filter={type} setFilter={setType} items={CARD_TYPES} title="Types" dismarkWhenPressedAgain={true} />
+                    filterType == "Deck" && 
+                    <FilterComponent selected={deckType} setSelected={setDeckType} items={DECK_TYPES} title='Deck type' dismarkWhenPressedAgain={false}/>
+                  }                  
+                  <FilterComponent selected={archetype} setSelected={setArchetype} items={ARCHETYPES} title="Archetypes" dismarkWhenPressedAgain={true} />
+                  <FilterComponent selected={attribute} setSelected={setAttribute} items={ATTRIBUTES} title="Attributes" dismarkWhenPressedAgain={true} />
+                  <FilterComponent selected={frametype} setSelected={setFrametype} items={FRAMETYPES} title="Frametypes" dismarkWhenPressedAgain={true} />
+                  <FilterComponent selected={race} setSelected={setRace} items={RACES} title="Races" dismarkWhenPressedAgain={true} />
+                  <FilterComponent selected={type} setSelected={setType} items={CARD_TYPES} title="Types" dismarkWhenPressedAgain={true} />
+                  <FilterComponent selected={type} setSelected={setType} items={CARD_TYPES} title="Types" dismarkWhenPressedAgain={true} />
+                  <FilterComponent selected={orderBy} setSelected={setOrderBy} items={CARD_ORDER_BY_OPTIONS} title="Order By" dismarkWhenPressedAgain={false} />
+                  <FilterComponent selected={order} setSelected={setOrder} items={ORDER_OPTIONS} title="Order" dismarkWhenPressedAgain={false} />
                   <View style={{width: '100%', height: 60}} ></View>
               </BottomSheetScrollView>
             </View>

@@ -1,6 +1,8 @@
-import { StyleSheet, Text, View} from 'react-native'
+import { StyleSheet, Pressable, Text, View} from 'react-native'
 import { Colors } from '@/constants/Colors'
 import React from 'react'
+import { AppConstants } from '@/constants/AppConstants'
+import AppStyle from '@/constants/AppStyle'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import CategoryItem from './CategoryItem'
 
@@ -8,13 +10,30 @@ import CategoryItem from './CategoryItem'
 interface CategoryFilterProps {
     title: string
     items: string[]
-    filter: string | null
-    setFilter: React.Dispatch<React.SetStateAction<string | null>>
+    selected: any
+    setSelected: React.Dispatch<React.SetStateAction<any>>
     dismarkWhenPressedAgain: boolean
 }
 
 
-const CategoryFilter = ({title, items, filter, setFilter, dismarkWhenPressedAgain}: CategoryFilterProps) => {
+const FilterComponent = ({title, items, selected, setSelected, dismarkWhenPressedAgain}: CategoryFilterProps) => {
+
+    const Item = ({name}: {name: string}) => {
+        const isSelected = selected == name;
+        const color = isSelected ? Colors.red : Colors.background
+        const handlePress = () => {
+            isSelected && dismarkWhenPressedAgain ? setSelected(null) : setSelected(name)
+        }
+        return (
+            <Pressable 
+                onPress={() => handlePress()}
+                hitSlop={AppConstants.hitSlopLarge}
+                style={[styles.itemContainer, {backgroundColor: color}]}>
+                <Text style={AppStyle.textRegular}>{name}</Text>
+            </Pressable>
+        )
+    }
+
     return (
         <View style={styles.container} >
           <Text style={styles.title}>{title}</Text>
@@ -22,23 +41,14 @@ const CategoryFilter = ({title, items, filter, setFilter, dismarkWhenPressedAgai
             data={items}            
             horizontal={true}            
             keyExtractor={(item: string) => item}                                    
-            renderItem={({item}) => {                
-                return (
-                    <CategoryItem 
-                        item={item} 
-                        filter={filter} 
-                        setFilter={setFilter}
-                        dismarkWhenPressedAgain={dismarkWhenPressedAgain}
-                    />
-                )
-                }
+            renderItem={({item}) => {return (<Item name={item}/>)}
             }/>
         </View>
       )
 }
 
 
-export default CategoryFilter
+export default FilterComponent
 
 
 const styles = StyleSheet.create({

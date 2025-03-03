@@ -1,11 +1,13 @@
 import { Session, User } from "@supabase/supabase-js"
 
-export interface ImageDB {
+export type OrderBy = "name" | "attack" | "defence" | "level"
+
+export type ImageDB = {
     image_id: number
     image_url: string
 }
 
-export interface YuGiOhCard {
+export type YuGiOhCard = {
     name: string
     card_id: number
     descr: string
@@ -23,9 +25,7 @@ export interface YuGiOhCard {
 export interface UserDB {    
     user_id: string
     name: string
-    image: ImageDB
-    base_color: string    
-    accent_color: string    
+    image: ImageDB    
 }
 
 export interface ColorDB {
@@ -36,8 +36,7 @@ export interface ColorDB {
 export interface GlobalContext {
     session: Session
     user: UserDB
-    profileIcons: ImageDB[]
-    colors: ColorDB[]    
+    profileIcons: ImageDB[]    
 }
 
 export interface GlobalState {
@@ -76,9 +75,7 @@ export interface FetchCardParams {
 }
 
 
-export type CardFilter = {
-    [chave: string]: number | string;
-};
+export type Filter = Map<string, string | null>
 
 export type NumberComp = "Greater" | "Greater or equal" | "Equal"
 
@@ -86,3 +83,8 @@ export type NumberFilterType = {
     number: string
     comp: NumberComp | null
 }
+
+export type CardOrderBy = "name" | "attack" | "defence" | "level"
+
+
+export type Order = "ASC" | "DESC"

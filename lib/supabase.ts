@@ -1,12 +1,30 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient, PostgrestError, Session } from '@supabase/supabase-js'
-import { ColorDB, GlobalContext, ImageDB, UserDB, YuGiOhCard } from '@/helpers/types'
+import { CardOrderBy, ColorDB, Filter, GlobalContext, ImageDB, UserDB, YuGiOhCard } from '@/helpers/types'
+import { OrderBy } from '@/helpers/types'
 import { FetchCardOptions, CARD_STRING_COLUMN } from '@/helpers/types'
+import { CARD_ORDER_BY_OPTIONS } from '@/constants/AppConstants'
 
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL : ""
 const SUPABASE_KEY = process.env.EXPO_PUBLIC_API_KEY ? process.env.EXPO_PUBLIC_API_KEY : ""
 const CARD_FETCH_LIMIT = 60
+const DECK_FETCH_LIMIT = 20
+
+const EQ_COMP = [
+  "archetype",
+  "attribute",
+  "frametype",
+  "race",
+  "type"
+]
+
+
+const GEQ_COMP = [
+  "attack",
+  "defence",
+  "level"
+]
 
 
 const STRING_COMPS: CARD_STRING_COLUMN[] = [
@@ -34,9 +52,7 @@ export async function supaFetchUser(user_id: string): Promise<UserDB | null> {
     ).select(`
       user_id,
       name, 
-      image_id,
-      accent_color, 
-      base_color,
+      image_id,      
       images (image_url)`
     ).eq("user_id", user_id).single().overrideTypes<UserDB>()    
     if (error) { return null }    
@@ -46,9 +62,7 @@ export async function supaFetchUser(user_id: string): Promise<UserDB | null> {
         image: {
           image_id: data.image_id,
           image_url: data.images.image_url
-        },        
-        accent_color: data.accent_color,
-        base_color: data.base_color
+        }
     }
   }
   
@@ -66,29 +80,24 @@ export async function supaFetchProfileIcons(): Promise<ImageDB[]> {
   )
 }
 
-
-export async function supaFetchColors(): Promise<ColorDB[]> {  
-  const {data, error} = await supabase.from("colors").select("name, hex_value").overrideTypes<ColorDB[]>()  
-  return data ? data : []
-}
-
-
 export async function supaFechGlobalContext(session: Session): Promise<GlobalContext | null> {
   if (!session) { return null }
   const user = await supaFetchUser(session.user.id)    
-  if (!user) { return null }  
-  const colors = await supaFetchColors()
+  if (!user) { return null }
   const icons = await supaFetchProfileIcons()
   return {
-    user: user,
-    colors: colors,
+    user: user,    
     profileIcons: icons,
     session: session
   }
 }
 
 
-export async function supaFetchCards(options: FetchCardOptions): Promise<{cards: YuGiOhCard[], error: PostgrestError | null}> {
+export async function supaFetchCards(
+  searchTxt: string | null,
+  options: Map<any, any>,
+  page: number
+): Promise<{cards: YuGiOhCard[], error: PostgrestError | null}> {
   let query = supabase.from('cards').select(`
     card_id,
     name,
@@ -104,43 +113,121 @@ export async function supaFetchCards(options: FetchCardOptions): Promise<{cards:
     image_url`  
   )
 
-  if (options?.name) {
-    query = query.ilike("name", `%${options.name}%`)
-  }
-
-  if (options?.archetype) {    
-    query = query.eq("archetype", options.archetype)
+  if (searchTxt) {
+    query = query.ilike("name", `%${searchTxt}%`)
   }  
 
-  if (options?.attribute) {    
-    query = query.eq("attribute", options.attribute)
-  }  
+  EQ_COMP.forEach(
+    (value) => {
+      if (options.get(value)) {
+        query = query.eq(value, options.get(value))
+      }
+    }
+  )
 
-  if (options?.frametype) {    
-    query = query.eq("frametype", options.frametype)
-  }  
+  GEQ_COMP.forEach(
+    (value) => {
+      if (options.get(value)) {
+        query = query.gte(value, options.get(value))
+      }
+    }
+  )
 
-  if (options?.race) {    
-    query = query.eq("race", options.race)
-  }  
+  const orderBy = options.get("orderBy")  
 
-  if (options?.type) {    
-    query = query.eq("type", options.type)
-  }
-  
-  if (options?.attack) {
-    query = query.gte("attack", options.attack)
-  }
-
-  if (options?.defence) {
-    query = query.gte("defence", options.defence)    
-  }
-
-  if (options?.level) {
-    query = query.gte("level", options.level)    
-  }
-
-  query = query.order("name", {ascending: true}).range(options.page * CARD_FETCH_LIMIT, ((options.page + 1) * CARD_FETCH_LIMIT) - 1)
+  query = query.order(
+    orderBy ? orderBy : "name",
+    {ascending: options.get("order") == "ASC", nullsFirst: false}
+  ).range(page * CARD_FETCH_LIMIT, ((page + 1) * CARD_FETCH_LIMIT) - 1)
   const {data, error} = await query.overrideTypes<YuGiOhCard[]>()
   return {cards: data ? data : [], error: error}  
+}
+
+
+export const supaFetchDecks = async (
+  searchTxt: string | null,
+  options: Map<any, any>, 
+  page: number
+) => {
+  let query = supabase.from("decks").select(`
+    deck_id,
+    name,
+    type,
+    image_url,
+    num_cards,
+    avg_attack,
+    avg_defence,
+    avg_level,
+    archetypes,
+    attributes,
+    frametypes,
+    races,
+    types
+  `)
+
+  if (searchTxt) {
+    query = query.ilike("name", `%${searchTxt}%`)
+  }
+
+  if (options.has('archetypes')) {
+    options.get('archetypes').forEach(
+      (value: string) => {
+        query = query.contains('archetypes', [value])
+      }
+    )
+  }
+
+  if (options.has('attributes')) {
+    options.get('attributes').forEach(
+      (value: string) => {
+        query = query.contains('attributes', [value])
+      }
+    )
+  }
+
+  if (options.has('frametypes')) {
+    options.get('frametypes').forEach(
+      (value: string) => {
+        query = query.contains('frametypes', [value])
+      }
+    )
+  }
+
+  if (options.has('races')) {
+    options.get('races').forEach(
+      (value: string) => {
+        query = query.contains('races', [value])
+      }
+    )
+  }
+
+  if (options.has('types')) {
+    options.get('types').forEach(
+      (value: string) => {
+        query = query.contains('types', [value])
+      }
+    )
+  }
+
+  if (options.get("avg_attack")) {
+    query = query.gte("avg_attack", options.get("avg_attack"))
+  }
+
+  if (options.get("avg_defence")) {
+    query = query.gte("avg_defence", options.get("avg_defence"))
+  }
+
+  if (options.get("avg_level")) {
+    query = query.gte("avg_level", options.get("avg_level"))
+  }
+
+  const orderBy: CardOrderBy = CARD_ORDER_BY_OPTIONS.includes(options.get("orderBy")) ? options.get("orderBy") : 'name'
+  
+  const {data, error} = await query.order(
+    orderBy,
+    {ascending: options.get("order") == "ASC"}
+  ).range(page * DECK_FETCH_LIMIT, ((page + 1) * DECK_FETCH_LIMIT) - 1)
+
+  return {data: data, error: error}
+  
 }

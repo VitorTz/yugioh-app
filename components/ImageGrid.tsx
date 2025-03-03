@@ -10,21 +10,35 @@ import { Colors } from '@/constants/Colors'
 
 interface ImageGridProps {
     images: YuGiOhCard[]
-    onScroll: (event: NativeScrollEvent) => void    
+    onEndReached: () => void
     isLoading: boolean
     hasResult: boolean
 }
 
-const ImageGrid = ({images, onScroll, isLoading, hasResult}: ImageGridProps) => {
+const ImageGrid = ({images, onEndReached, isLoading, hasResult}: ImageGridProps) => {  
+
+  const Footer = () => {
+    return (
+      <>
+        {
+          isLoading && 
+          hasResult && 
+          <ActivityIndicator size={'large'} color={Colors.orange} />
+        }
+      </>
+    )
+  }
+
   return (        
     <View style={styles.container}>
         <FlashList          
           data={images}
           keyboardShouldPersistTaps={"handled"}
           numColumns={AppConstants.gridColumns}                
-          estimatedItemSize={128}          
-          onScroll={event => onScroll(event.nativeEvent)}          
-          scrollEventThrottle={5}          
+          estimatedItemSize={128}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={<Footer/>}
           renderItem={
               ({item, index}) => {
                 return (
@@ -32,13 +46,7 @@ const ImageGrid = ({images, onScroll, isLoading, hasResult}: ImageGridProps) => 
                 )
             }
           }
-        />
-        {
-          isLoading && hasResult &&
-          <View style={{marginTop: 10}} >
-            <ActivityIndicator size={32} color={Colors.orange} />
-          </View>
-        }        
+        />        
     </View>
   )
 }

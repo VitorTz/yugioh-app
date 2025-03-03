@@ -1,3 +1,4 @@
+import { CardOrderBy, Order } from "@/helpers/types";
 import { Colors } from "./Colors";
 
 
@@ -746,3 +747,16 @@ export const ATTRIBUTES = [
   "Water", 
   "Wind"
 ].sort()
+
+export const CARD_ORDER_BY_OPTIONS: CardOrderBy[] = [
+  'name',
+  'attack',
+  'defence',
+  'level'
+]
+
+
+export const ORDER_OPTIONS: Order[] = [
+  "ASC",
+  "DESC"
+]
