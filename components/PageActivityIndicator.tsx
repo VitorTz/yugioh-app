@@ -6,7 +6,7 @@ import React from 'react'
 const PageActivityIndicator = () => {
   return (
     <View style={{flex: 1, alignItems: "center", justifyContent: "center"}} >
-        <ActivityIndicator size={64} color={Colors.white} /> 
+        <ActivityIndicator size={64} color={Colors.orange} /> 
     </View>
   )
 }

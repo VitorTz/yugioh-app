@@ -1,29 +1,42 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native'
-import { NumberFilterType } from '@/helpers/types'
+import { Filter, NumberFilterType } from '@/helpers/types'
 import { Colors } from '@/constants/Colors'
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import AppStyle from '@/constants/AppStyle'
 
 
 interface NumberFilterProps {
     title: string
-    number: any
-    setNumber: any
+    filter: Filter
+    filterKey: string
     maxLenght: number
+    shouldResetFilter: boolean
 }
 
 
-const NumberFilter = ({title, number, setNumber, maxLenght}: NumberFilterProps) => {
+const NumberFilter = ({title, filter, filterKey, maxLenght, shouldResetFilter}: NumberFilterProps) => {
+
+    const ref = useRef<TextInput>(null)
+
+    useEffect(
+        () => {
+            if (shouldResetFilter) {
+                ref.current?.clear()
+            }
+        },
+        [shouldResetFilter]
+    )
+
     return (
         <View style={{gap: 10, marginBottom: 10}} >
             <Text style={AppStyle.textHeader}>{title}</Text>
             <TextInput
-                placeholderTextColor={Colors.white}
-                value={number}
+                ref={ref}
+                placeholderTextColor={Colors.white}                
                 placeholder="0"
                 maxLength={maxLenght}
                 keyboardType="numeric"
-                onChangeText={text => setNumber(text)}
+                onChangeText={text => filter.set(filterKey, text)}
                 style={[styles.input]}
             />
         </View>

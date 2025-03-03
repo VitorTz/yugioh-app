@@ -3,14 +3,13 @@ import AppStyle from '@/constants/AppStyle'
 import React, { useEffect, useState } from 'react'
 import { useGlobalState } from '@/context/GlobalContext'
 import { router } from 'expo-router'
-import { Image } from 'expo-image'
 import { Colors } from '@/constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '@/lib/supabase'
 import Toast from 'react-native-toast-message'
 import { showToast } from '@/helpers/util'
 import { sleep } from '@/helpers/sleep'
-import Animated, { FadeInLeft, FadeInUp } from 'react-native-reanimated'
+import Animated, { FadeInUp } from 'react-native-reanimated'
 import { AppConstants } from '@/constants/AppConstants'
 import ProfileOption from '@/components/ProfileOption'
 import PageActivityIndicator from '@/components/PageActivityIndicator'
@@ -27,16 +26,20 @@ const Profile = () => {
   const [waitingForSession, setWaitingForSession] = useState(true)  
   const username: string | undefined = context?.user.name
   const userImage: ImageDB | undefined = context?.user.image  
-  const userAccentColor: string | undefined = context?.user.accent_color  
+
+  const initPage = async () => {
+    if (context == null) {        
+      await sleep(500)
+      router.replace("/(auth)/signin")
+      setWaitingForSession(true)
+    } else {        
+      setWaitingForSession(false)
+    }
+  }
   
   useEffect(
-    () => {
-      if (context == null) {
-        router.replace("/(auth)/signin")
-        setWaitingForSession(true)
-      } else {        
-        setWaitingForSession(false)
-      }
+    () => {      
+      initPage()
     },
     [context]
   )  

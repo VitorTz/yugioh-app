@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { YuGiOhCard } from '@/helpers/types'
 import { Colors } from '@/constants/Colors'
 import { ColumnItem } from './FlashListColumnItem'
-import { AppConstants } from '@/constants/AppConstants'
+import { AppConstants, GRID_COLUMNS, IMAGE_GRID_HEIGHT, IMAGE_GRID_WIDTH } from '@/constants/AppConstants'
 import { router } from 'expo-router'
 
 
@@ -41,14 +41,13 @@ const ImageCard = ({item, index}: ImageCardProps) => {
     }
 
     return (        
-        <ColumnItem index={index} numColumns={AppConstants.gridColumns} >
-            <Pressable onPress={() => handlePress()}>
-                <Image
-                    style={styles.image}
-                    source={item.image_url}                    
-                />                
-            </Pressable>        
-        </ColumnItem>
+        <Pressable onPress={() => handlePress()} style={{alignItems: "center", flex: 1, marginTop: index >= GRID_COLUMNS ? 10 : 0}}>
+            <Image
+                style={styles.image}
+                source={item.image_url}                    
+            />                
+        </Pressable>        
+        
     )
 }
 
@@ -56,7 +55,7 @@ export default ImageCard
 
 const styles = StyleSheet.create({    
     image: {
-        width: 90,
-        height: 128
+        width: IMAGE_GRID_WIDTH,
+        height: IMAGE_GRID_HEIGHT
     }   
 })

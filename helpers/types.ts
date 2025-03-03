@@ -46,36 +46,8 @@ export interface GlobalState {
 
 export type CARD_STRING_COLUMN = "name" | "attribute" | "archetype" | "frametype" | "type" | "race" | string
 
-export interface FetchCardOptions {
-  name: CARD_STRING_COLUMN | null  
-  page: number 
-  attack: number | null
-  attackEQ: boolean | null
-  attackGE: boolean | null  
 
-  defence: number | null
-  defenceEQ: boolean | null
-  defenceGE: boolean | null  
-
-  level: number | null
-  levelEQ: boolean | null
-  levelGE: boolean | null  
-
-  attribute: CARD_STRING_COLUMN | null
-  archetype: CARD_STRING_COLUMN | null
-  frametype: CARD_STRING_COLUMN | null
-  type: CARD_STRING_COLUMN | null
-  race: CARD_STRING_COLUMN | null 
-}
-
-
-export interface FetchCardParams {
-    options: FetchCardOptions
-    page: number
-}
-
-
-export type Filter = Map<string, string | null>
+export type Filter = Map<string, string | null | string[]>
 
 export type NumberComp = "Greater" | "Greater or equal" | "Equal"
 

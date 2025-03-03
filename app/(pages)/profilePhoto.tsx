@@ -22,14 +22,13 @@ const profilePhoto = () => {
 
     const {context, setContext} = useGlobalState()        
     const [loading, setLoading] = useState<boolean>(false)    
-    const [tempProfileIcon, setTempProfileIcon] = useState<ImageDB | undefined>(context?.user.image)
-    const [tempAccentColor, setTempAccentColor] = useState<string | undefined>(context?.user.accent_color)
+    const [tempProfileIcon, setTempProfileIcon] = useState<ImageDB | undefined>(context?.user.image)    
 
     const handleSave = async () => {
         setLoading(true)
-        if (context && tempProfileIcon && tempAccentColor) {
+        if (context && tempProfileIcon) {
             const {data, error} = await supabase.from("users").update(
-                {"image_id": tempProfileIcon.image_id, "accent_color": tempAccentColor}
+                {"image_id": tempProfileIcon.image_id}
             ).eq("user_id", context.user.user_id).select()
             if (error) {
                 showToast("Error", error.message, "error")
@@ -37,13 +36,11 @@ const profilePhoto = () => {
                 return
             }            
             showToast("Success", "Profile icon changed", "success")                
-            context.user.image = tempProfileIcon
-            context.user.accent_color = tempAccentColor
+            context.user.image = tempProfileIcon            
             setContext(
                 {
                     session: context.session,
-                    user: context.user,
-                    colors: context.colors,
+                    user: context.user,                    
                     profileIcons: context.profileIcons
                 }
             )
@@ -90,7 +87,7 @@ const profilePhoto = () => {
 
             <View style={[AppStyle.backdrop, {marginTop: 30}]}>
                 <View style={{position: 'absolute', top: -50}} >
-                    <ProfileIcon image={tempProfileIcon} accentColor={tempAccentColor} />
+                    <ProfileIcon image={tempProfileIcon} accentColor={Colors.background} />
                 </View>                
                 <View style={{height: '100%', width: '100%', paddingTop: 70}} >
                     <FlashList                                                

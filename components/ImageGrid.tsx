@@ -1,6 +1,6 @@
 import { ActivityIndicator, NativeScrollEvent, StyleSheet, View, Text } from 'react-native'
 import { FlashList, useBlankAreaTracker } from '@shopify/flash-list'
-import { AppConstants } from '@/constants/AppConstants'
+import { AppConstants, GRID_COLUMNS } from '@/constants/AppConstants'
 import ImageCard from './ImageCard'
 import {Image} from 'expo-image'
 import React, { useEffect, useRef, useState } from 'react'
@@ -34,11 +34,11 @@ const ImageGrid = ({images, onEndReached, isLoading, hasResult}: ImageGridProps)
         <FlashList          
           data={images}
           keyboardShouldPersistTaps={"handled"}
-          numColumns={AppConstants.gridColumns}                
-          estimatedItemSize={128}
+          numColumns={GRID_COLUMNS}
+          estimatedItemSize={80}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
-          ListFooterComponent={<Footer/>}
+          ListFooterComponent={<Footer/>}          
           renderItem={
               ({item, index}) => {
                 return (
@@ -57,11 +57,10 @@ const styles = StyleSheet.create({
   container: {
     width: '100%', 
     flex: 1, 
-    padding: 20, 
-    backgroundColor: Colors.gray, 
-    borderRadius: 4,
+    padding: 10,    
+    backgroundColor: Colors.gray,     
     borderWidth: 1,
-    borderColor: Colors.orange
+    borderColor: Colors.orange,    
   },
   noResultContainer: {
     marginTop: 16, 

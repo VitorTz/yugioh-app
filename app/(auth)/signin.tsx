@@ -7,7 +7,8 @@ import {
   Text, 
   TextInput, 
   View, 
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native'
 import React from 'react'
 import { useState } from 'react'
@@ -98,70 +99,71 @@ const SignIn = () => {
 
   return (
     <SafeAreaView style={AppStyle.safeArea} >
-      
-      <View style={{width: '100%', flexDirection: "row", justifyContent: "space-between", alignItems: "center"}} >
-          <View style={{flexDirection: "row", marginVertical: 30}} >
-            <Text style={{fontSize: 38, color: Colors.orange, fontWeight: "bold"}} >Ygo</Text>
-            <Text style={{fontSize: 38, color: Colors.white, fontWeight: "bold"}} >App</Text>
-          </View>
-          <Pressable onPress={() => router.replace("/(tabs)/database")} hitSlop={{top: 20, bottom: 20, left: 20, right: 20}} >
-            <Text style={{textDecorationLine: "underline", color: Colors.orange}} >Skip</Text> 
-          </Pressable>
-      </View>
-
-      <KeyboardAvoidingView style={{width: '100%'}} >
-        <ScrollView style={{width: '100%'}} >
-            {/* Email */}
-            <Text style={styles.inputHeaderText}>Email</Text>
-              <Controller
-                  control={control}
-                  name="email"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                      style={styles.input}                    
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}/>
-                  )}
-              />
-              {errors.email && (<Text style={styles.error}>{errors.email.message}</Text>)}
-              
-              {/* Password */}
-              <Text style={styles.inputHeaderText}>Password</Text>
-              <Controller
-                  name="password"
-                  control={control}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                      style={styles.input}                    
-                      secureTextEntry
-                      autoCapitalize="none"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}/>
-                  )}
-              />
-              {errors.password && (<Text style={styles.error}>{errors.password.message}</Text>)}
-      
-              {/* Login Button */}
-              <Pressable onPress={handleSubmit(onSubmit)} style={styles.formButton} >
-                  {
-                      isLoading ? 
-                      <ActivityIndicator size={32} color={Colors.white} /> :
-                      <Text style={styles.formButtonText} >Login</Text>
-                  }
-              </Pressable>
-          <View style={{flexDirection: "row", marginTop: 20, gap: 4}} >
-            <Text style={{color: Colors.orange, fontSize: 14}} >Don't Have an Account?</Text> 
-            <Pressable onPress={() => router.replace("/(auth)/signup")}  hitSlop={{left: 10, top: 10, bottom: 10, right: 10}} >
-              <Text style={{textDecorationLine: "underline", fontWeight: "bold", color: Colors.orange, fontSize: 14}} >Sign Up</Text> 
+      <View style={{width: '100%', maxWidth: 600, alignItems: "center", justifyContent: "center", height: '100%'}} >
+        <View style={{width: '100%', flexDirection: "row", justifyContent: "space-between", alignItems: "center"}} >
+            <View style={{flexDirection: "row", marginVertical: 30}} >
+              <Text style={{fontSize: 38, color: Colors.orange, fontWeight: "bold"}} >Ygo</Text>
+              <Text style={{fontSize: 38, color: Colors.white, fontWeight: "bold"}} >App</Text>
+            </View>
+            <Pressable onPress={() => router.replace("/(tabs)/database")} hitSlop={{top: 20, bottom: 20, left: 20, right: 20}} >
+              <Text style={{textDecorationLine: "underline", color: Colors.orange}} >Skip</Text> 
             </Pressable>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    <Toast/>
+        </View>
+
+        <KeyboardAvoidingView style={{width: '100%'}} >
+          <ScrollView style={{width: '100%'}} >
+              {/* Email */}
+              <Text style={styles.inputHeaderText}>Email</Text>
+                <Controller
+                    control={control}
+                    name="email"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                        style={styles.input}                    
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}/>
+                    )}
+                />
+                {errors.email && (<Text style={styles.error}>{errors.email.message}</Text>)}
+                
+                {/* Password */}
+                <Text style={styles.inputHeaderText}>Password</Text>
+                <Controller
+                    name="password"
+                    control={control}
+                    render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                        style={styles.input}                    
+                        secureTextEntry
+                        autoCapitalize="none"
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}/>
+                    )}
+                />
+                {errors.password && (<Text style={styles.error}>{errors.password.message}</Text>)}
+        
+                {/* Login Button */}
+                <Pressable onPress={handleSubmit(onSubmit)} style={styles.formButton} >
+                    {
+                        isLoading ? 
+                        <ActivityIndicator size={32} color={Colors.white} /> :
+                        <Text style={styles.formButtonText} >Login</Text>
+                    }
+                </Pressable>
+            <View style={{flexDirection: "row", marginTop: 20, gap: 4}} >
+              <Text style={{color: Colors.orange, fontSize: 14}} >Don't Have an Account?</Text> 
+              <Pressable onPress={() => router.replace("/(auth)/signup")}  hitSlop={{left: 10, top: 10, bottom: 10, right: 10}} >
+                <Text style={{textDecorationLine: "underline", fontWeight: "bold", color: Colors.orange, fontSize: 14}} >Sign Up</Text> 
+              </Pressable>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
+      <Toast/>
     </SafeAreaView>
   )
 }

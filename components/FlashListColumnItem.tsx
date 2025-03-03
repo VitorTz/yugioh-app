@@ -9,7 +9,7 @@ const getItemStyle = (index: number, numColumns: number) => {
   })();
 
   return {
-    alignItems,
+    alignItems: "center",
     width: "100%",
   } as const;
 };

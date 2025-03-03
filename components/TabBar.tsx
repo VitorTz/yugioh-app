@@ -60,12 +60,13 @@ export default TabBar;
 
 const styles = StyleSheet.create({
     container: {              
-      paddingVertical: 14,      
+      paddingVertical: 14, 
+      width: '100%',      
       position: 'absolute',
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      backgroundColor: Colors.gray,        
+      backgroundColor: Colors.gray,      
       bottom: 0
     },
     tabBarItem: {

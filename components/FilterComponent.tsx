@@ -1,28 +1,48 @@
 import { StyleSheet, Pressable, Text, View} from 'react-native'
 import { Colors } from '@/constants/Colors'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { AppConstants } from '@/constants/AppConstants'
 import AppStyle from '@/constants/AppStyle'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
-import CategoryItem from './CategoryItem'
+import { Filter } from '@/helpers/types'
+
 
 
 interface CategoryFilterProps {
     title: string
     items: string[]
-    selected: any
-    setSelected: React.Dispatch<React.SetStateAction<any>>
+    filter: Filter 
+    filterKey: string   
     dismarkWhenPressedAgain: boolean
+    defaultValue?: string | null
+    shouldResetFilters: boolean
 }
 
 
-const FilterComponent = ({title, items, selected, setSelected, dismarkWhenPressedAgain}: CategoryFilterProps) => {
+const FilterComponent = ({title, filterKey, items, filter, dismarkWhenPressedAgain, shouldResetFilters, defaultValue = null}: CategoryFilterProps) => {
 
-    const Item = ({name}: {name: string}) => {
+    const [selected, setSelected] = useState<string | null>(defaultValue)
+
+    useEffect(
+        () => {
+            if (shouldResetFilters) {
+                setSelected(defaultValue)
+            }
+        },
+        [shouldResetFilters]
+    )
+
+    const Item = ({name}: {name: string}) => {        
         const isSelected = selected == name;
         const color = isSelected ? Colors.red : Colors.background
         const handlePress = () => {
-            isSelected && dismarkWhenPressedAgain ? setSelected(null) : setSelected(name)
+            if (isSelected && dismarkWhenPressedAgain) {
+                setSelected(null)
+                filter.set(filterKey, null)
+            } else {
+                setSelected(name)
+                filter.set(filterKey, name)
+            }            
         }
         return (
             <Pressable 

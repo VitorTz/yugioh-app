@@ -1,6 +1,19 @@
 import { CardOrderBy, Order } from "@/helpers/types";
 import { Colors } from "./Colors";
+import { wp, hp } from "@/helpers/util";
+import { Platform } from "react-native";
 
+export const API_CARD_WITH = 813
+export const API_CARD_HEIGHT = 1185
+
+export const WIDTH = wp(100)
+export const GRID_COLUMNS = WIDTH < 500 ? 3 : WIDTH < 900 ? 5 : 12
+export const DEFAULT_HORIZONTAL_PADDING = 20
+export const IMAGE_GRID_GAP = 16
+export const IMAGE_GRID_WIDTH = (wp(100) - DEFAULT_HORIZONTAL_PADDING - (GRID_COLUMNS * IMAGE_GRID_GAP)) / GRID_COLUMNS
+export const IMAGE_GRID_HEIGHT = IMAGE_GRID_WIDTH * (API_CARD_HEIGHT / API_CARD_WITH)
+export const CARD_FETCH_LIMIT = Platform.OS == "web" ? 120 : 60
+export const DECK_FETCH_LIMIT = Platform.OS == "web" ? 120 : 60
 
 
 export const AppConstants = {
@@ -47,8 +60,7 @@ export const AppConstants = {
           shouldShowLoadingStatus: true
         }
     ],
-    blurhash: '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[',
-    gridColumns: 3
+    blurhash: '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj['
 }
 
 export const DECK_TYPES = [

@@ -1,15 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient, PostgrestError, Session } from '@supabase/supabase-js'
-import { CardOrderBy, ColorDB, Filter, GlobalContext, ImageDB, UserDB, YuGiOhCard } from '@/helpers/types'
-import { OrderBy } from '@/helpers/types'
-import { FetchCardOptions, CARD_STRING_COLUMN } from '@/helpers/types'
-import { CARD_ORDER_BY_OPTIONS } from '@/constants/AppConstants'
+import { CardOrderBy, GlobalContext, ImageDB, UserDB, YuGiOhCard } from '@/helpers/types'
+import { CARD_ORDER_BY_OPTIONS, CARD_FETCH_LIMIT, DECK_FETCH_LIMIT } from '@/constants/AppConstants'
 
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL : ""
 const SUPABASE_KEY = process.env.EXPO_PUBLIC_API_KEY ? process.env.EXPO_PUBLIC_API_KEY : ""
-const CARD_FETCH_LIMIT = 60
-const DECK_FETCH_LIMIT = 20
+
 
 const EQ_COMP = [
   "archetype",
@@ -27,19 +24,9 @@ const GEQ_COMP = [
 ]
 
 
-const STRING_COMPS: CARD_STRING_COLUMN[] = [
-  "name",
-  "attribute",
-  "archetype",
-  "frametype",
-  "type",
-  "race"
-]
-
-
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
-    storage: AsyncStorage,
+    storage: typeof window !== 'undefined' ? AsyncStorage : undefined,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
@@ -54,7 +41,7 @@ export async function supaFetchUser(user_id: string): Promise<UserDB | null> {
       name, 
       image_id,      
       images (image_url)`
-    ).eq("user_id", user_id).single().overrideTypes<UserDB>()    
+    ).eq("user_id", user_id).single()
     if (error) { return null }    
     return {      
         user_id: data.user_id,
