@@ -2,18 +2,14 @@ import { TextInput, NativeScrollEvent, Pressable, SafeAreaView, StyleSheet, Text
 import AppStyle from '@/constants/AppStyle'
 import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { supabase, supaFetchCards, supaFetchDecks } from '@/lib/supabase'
-import { CardOrderBy, Filter, Order, YuGiOhCard } from '@/helpers/types'
+import { YuGiOhCard } from '@/helpers/types'
 import { useCallback } from 'react'
-import {at, debounce} from 'lodash'
+import {at, debounce, filter} from 'lodash'
 import ImageGrid from '@/components/ImageGrid'
 import { Colors } from '@/constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
-import BottomSheet, { BottomSheetFlatList, BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { AppConstants, ARCHETYPES, ATTRIBUTES, CARD_ORDER_BY_OPTIONS, CARD_TYPES, DECK_TYPES, FRAMETYPES, ORDER_OPTIONS, RACES } from "@/constants/AppConstants";
-import NumberFilter from "@/components/NumberFilter";
-import FilterComponent from "@/components/FilterComponent";
+import { AppConstants } from "@/constants/AppConstants";
 import { wp, hp } from '@/helpers/util'
-import { FlatList } from 'react-native'
 import CardFilters from '@/components/CardFilters'
 import CardCustomPicker from '@/components/CardCustomPicker'
 
@@ -24,7 +20,6 @@ var cardSearchText: string | null = null
 var deckSearchText: string | null = null
 var cardPage: number = 0
 var deckPage: number = 0
-var endReached = false
 
 resetCardFilter()
 resetDeckFilter()
@@ -59,17 +54,9 @@ const Database = () => {
   const [images, setImages] = useState<YuGiOhCard[]>([])
   const [isLoading, setLoading] = useState(false)  
   const [hasResult, setHasResults] = useState(true)      
+  const [filterType, setFilterType] = useState<"Card" | "Deck">("Card")
   const textRef = useRef<TextInput>(null)
 
-  // BottomSheett
-  const sheetRef = useRef<BottomSheet>(null);  
-  const snapPoints = useMemo(() => ["75%"], []);
-  
-  // Filters
-  const [filterType, setFilterType] = useState<"Deck" | "Card">("Card")
-
-  const [shouldResetFilters, setShouldResetFilter] = useState(false)
-  
   
   const fetchCards = async (append: boolean = false) => {
     setLoading(true)
@@ -97,17 +84,6 @@ const Database = () => {
     []
   )
 
-  useEffect(
-    () => {
-      if (shouldResetFilters) {
-        console.log("reseting filters")
-        handleResetFilters()
-        setShouldResetFilter(false)
-      }
-    },
-    [shouldResetFilters]
-  )
-
   const handleSearch = async (text: string | null, append: boolean = false) => {
     const s: string | null = text ? text : null
     switch (filterType) {
@@ -131,31 +107,7 @@ const Database = () => {
       []
   )
 
-  const handleSnapPress = useCallback((index: number) => {
-    sheetRef.current?.snapToIndex(index);    
-    Keyboard.dismiss()
-  }, []);
-  
-  const handleClosePress = () => {
-    sheetRef.current?.close();
-    Keyboard.dismiss()
-  }
-
-  const handleResetFilters = useCallback(
-    async () => {      
-      switch (filterType) {
-        case "Card":
-          resetCardFilter()    
-          cardPage = 0
-          await fetchCards()
-          break
-        }    
-    },
-    [shouldResetFilters]
-  ) 
-
-  const applyFilter = async () => {
-    handleClosePress()    
+  const applyFilter = async () => {    
     switch (filterType) {
       case "Card":
         cardPage = 0       
@@ -167,11 +119,6 @@ const Database = () => {
     }    
   }
 
-  const applyReset = () => {
-    handleClosePress()
-    setShouldResetFilter(true)
-  }
-
   const handleEndReached = useCallback(async () => {
     if (!isLoading && hasResult) {      
       console.log("end")
@@ -180,6 +127,9 @@ const Database = () => {
     }
   }, [isLoading]);
 
+  const openFilters = () => {
+
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>      
@@ -194,52 +144,21 @@ const Database = () => {
                 style={styles.input}
             />
             <View style={{position: 'absolute', right: 10, top: 0, bottom: 0, alignItems: "center", justifyContent: "center"}}>
-              <Pressable onPress={() => handleSnapPress(0)} hitSlop={AppConstants.hitSlopLarge}>
+              <Pressable onPress={() => openFilters()} hitSlop={AppConstants.hitSlopLarge}>
                 <Ionicons size={28} color={Colors.orange} name="options-outline"></Ionicons>
               </Pressable>
             </View>
-          </View>        
+          </View>   
+          <View style={{width: '100%', marginBottom: 10}} >
+            <CardCustomPicker applyFilter={applyFilter} options={cardOptions}/>
+          </View>
           <ImageGrid 
             isLoading={isLoading} 
             images={images} 
             onEndReached={handleEndReached}
             hasResult={hasResult}/>
         </View>
-        
-            <BottomSheet
-              ref={sheetRef}
-              index={-1}          
-              handleIndicatorStyle={{display: "none"}}
-              snapPoints={snapPoints}                 
-              backgroundStyle={{backgroundColor: Colors.gray}}
-              enableDynamicSizing={false}   
-              enableContentPanningGesture={false}>
-              <View>
-                <BottomSheetScrollView 
-                  style={{width: '100%', padding: 20, paddingVertical: 10}}
-                  keyboardShouldPersistTaps={"handled"}>
-                  <View style={{flexDirection: "row", gap: 20, alignItems: "center", justifyContent: "space-between", marginBottom: 20}} >
-                    <View style={{flexDirection: "row", gap: 42, alignItems: "center", justifyContent: "center"}} >
-                      <Pressable  onPress={() => applyFilter()}  hitSlop={AppConstants.hitSlopLarge} >
-                        <Ionicons name='checkmark-circle-outline' size={42} color={Colors.orange} />
-                      </Pressable>
-                      <Pressable onPress={() => applyReset()} hitSlop={AppConstants.hitSlopLarge}>
-                        <Ionicons name="refresh-circle-outline" size={42} color={Colors.orange} />
-                      </Pressable>
-                    </View>
-                      <Pressable onPress={() => handleClosePress()} hitSlop={AppConstants.hitSlopLarge}>
-                        <Ionicons name='close-circle-outline' size={42} color={Colors.orange} />
-                      </Pressable>
-                  </View>
-                    <CardCustomPicker/>
-                    <CardFilters cardFilter={cardOptions} shouldResetFilters={shouldResetFilters} />
-                    <View style={{width: '100%', height: 60}} ></View>
-                </BottomSheetScrollView>
-              </View>
-            </BottomSheet>        
-          
-
-        </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }

@@ -16,6 +16,28 @@ export const CARD_FETCH_LIMIT = Platform.OS == "web" ? 120 : 60
 export const DECK_FETCH_LIMIT = Platform.OS == "web" ? 120 : 60
 
 
+export const PICKER_BADGE_DOT_COLORS = [  
+  "#FFC300", // Amarelo vibrante
+  "#DAF7A6", // Verde claro
+  "#C70039", // Vermelho intenso
+  "#900C3F", // Vinho profundo
+  "#581845", // Roxo escuro
+  "#FF1493", // Rosa choque
+  "#00FFFF", // Ciano
+  "#7FFF00", // Verde chartreuse
+  "#FFD700", // Dourado
+  "#FF4500", // Laranja forte
+  "#32CD32", // Verde lima
+  "#00FA9A", // Verde menta
+  "#FF69B4", // Rosa vibrante
+  "#00BFFF", // Azul celeste
+  "#FF6347", // Tomate
+  "#ADFF2F", // Amarelo esverdeado
+  "#FFA500", // Laranja
+  "#FF00FF", // Magenta
+  "#FF0000", // Vermelho
+];
+
 export const AppConstants = {
     icon: {
         size: 32,

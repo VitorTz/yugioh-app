@@ -107,7 +107,10 @@ export async function supaFetchCards(
   EQ_COMP.forEach(
     (value) => {
       if (options.get(value)) {
-        query = query.eq(value, options.get(value))
+        const s = options.get(value).map((item: string) => `${value}.eq.${item}`).join(',')        
+        if (s) {
+          query = query.or(s)
+        }
       }
     }
   )
