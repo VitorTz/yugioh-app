@@ -1,7 +1,7 @@
 import { TextInput, Pressable, SafeAreaView, StyleSheet, Animated, View, KeyboardAvoidingView, Keyboard, Platform } from 'react-native'
 import React, { useEffect, useState, useRef } from 'react'
 import { supaFetchCards, supaFetchDecks } from '@/lib/supabase'
-import { YuGiOhCard } from '@/helpers/types'
+import { YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
 import { useCallback } from 'react'
 import { debounce } from 'lodash'
 import ImageGrid from '@/components/ImageGrid'
@@ -50,6 +50,7 @@ function resetDeckFilter() {
 const Database = () => {
   
   const [images, setImages] = useState<YuGiOhCard[]>([])
+  const [decks, setDecks] = useState<YuGiOhDeck[]>([])
   const [isLoading, setLoading] = useState(false)  
   const [hasResult, setHasResults] = useState(true)      
   const [filterType, setFilterType] = useState<"Card" | "Deck">("Card")  
@@ -106,8 +107,7 @@ const Database = () => {
       []
   )
 
-  const applyFilter = async () => {    
-    console.log("apply")
+  const applyFilter = async () => {
     switch (filterType) {
       case "Card":
         cardPage = 0       

@@ -22,6 +22,22 @@ export type YuGiOhCard = {
     image_url: string
 }
 
+export type YuGiOhDeck = {
+    name: string
+    deck_id: number
+    type: string
+    image_url: string
+    num_cards: number
+    avg_attack: number
+    avg_defence: number
+    avg_level: number
+    archetypes: string[]
+    attributes: string[]
+    frametypes: string[]
+    races: string[]
+    types: string[]
+}
+
 export interface UserDB {    
     user_id: string
     name: string

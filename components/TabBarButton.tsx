@@ -1,8 +1,14 @@
+import Animated, { 
+  interpolate, 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring 
+} from 'react-native-reanimated'
+import { AppConstants } from '@/constants/AppConstants'
 import { StyleSheet, Pressable } from 'react-native'
-import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
-import { icons } from '@/helpers/icons'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect } from 'react'
+import { icons } from '@/helpers/icons'
 
 
 const TabBarButton = (props: any) => { 
@@ -60,15 +66,13 @@ const TabBarButton = (props: any) => {
 
 
   return (
-    <Pressable {...props} style={styles.container} hitSlop={{left: 10, right: 10, top: 10, bottom: 10}} >
+    <Pressable {...props} style={styles.container} hitSlop={AppConstants.hitSlop} >
       <Animated.View style={animatedIconStyle} >
         <Ionicons name={icons[routeName]} size={22} color={color} />
       </Animated.View>
-       
-        <Animated.Text style={[{ color, fontSize: 11 }, animatedTextStyle]}>
-          {label}
-        </Animated.Text>
-       
+      <Animated.Text style={[styles.text, {color: color}, animatedTextStyle]}>
+        {label}
+      </Animated.Text>
     </Pressable>
   )
 }
@@ -81,5 +85,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 5    
+  },
+  text: {
+    fontFamily: "LeagueSpartan_400Regular",
+    fontSize: 14    
   }
 })

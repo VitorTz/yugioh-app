@@ -1,6 +1,8 @@
 
 
-export const icons: { [key: string]: string } = {
+export const icons: { 
+    [key: string]: "server-outline" | "pie-chart-outline" | "document-outline" | "newspaper-outline" | "person-circle-outline"
+} = {
     database: "server-outline",
     stats: "pie-chart-outline",
     collection: "document-outline",
