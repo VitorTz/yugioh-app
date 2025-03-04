@@ -6,37 +6,23 @@ import { Platform } from "react-native";
 export const API_CARD_WITH = 813
 export const API_CARD_HEIGHT = 1185
 
-export const WIDTH = wp(100)
-export const GRID_COLUMNS = WIDTH < 500 ? 3 : WIDTH < 900 ? 5 : 12
-export const DEFAULT_HORIZONTAL_PADDING = 20
-export const IMAGE_GRID_GAP = 16
-export const IMAGE_GRID_WIDTH = (wp(100) - DEFAULT_HORIZONTAL_PADDING - (GRID_COLUMNS * IMAGE_GRID_GAP)) / GRID_COLUMNS
-export const IMAGE_GRID_HEIGHT = IMAGE_GRID_WIDTH * (API_CARD_HEIGHT / API_CARD_WITH)
+export const DEFAULT_HORIZONTAL_PADDING = 10
 export const CARD_FETCH_LIMIT = Platform.OS == "web" ? 120 : 60
 export const DECK_FETCH_LIMIT = Platform.OS == "web" ? 120 : 60
 
+export const WIDTH = wp(100)
+export const HEIGHT = hp(100)
 
-export const PICKER_BADGE_DOT_COLORS = [  
-  "#FFC300", // Amarelo vibrante
-  "#DAF7A6", // Verde claro
-  "#C70039", // Vermelho intenso
-  "#900C3F", // Vinho profundo
-  "#581845", // Roxo escuro
-  "#FF1493", // Rosa choque
-  "#00FFFF", // Ciano
-  "#7FFF00", // Verde chartreuse
-  "#FFD700", // Dourado
-  "#FF4500", // Laranja forte
-  "#32CD32", // Verde lima
-  "#00FA9A", // Verde menta
-  "#FF69B4", // Rosa vibrante
-  "#00BFFF", // Azul celeste
-  "#FF6347", // Tomate
-  "#ADFF2F", // Amarelo esverdeado
-  "#FFA500", // Laranja
-  "#FF00FF", // Magenta
-  "#FF0000", // Vermelho
-];
+export const CARD_GRID_COLUMNS = WIDTH < 500 ? 3 : WIDTH < 900 ? 5 : 12
+export const CARD_GRID_GAP = 16
+export const CARD_GRID_WIDTH = (wp(100) - DEFAULT_HORIZONTAL_PADDING - (CARD_GRID_COLUMNS * CARD_GRID_GAP)) / CARD_GRID_COLUMNS
+export const CARD_GRID_HEIGHT = CARD_GRID_WIDTH * (API_CARD_HEIGHT / API_CARD_WITH)
+
+export const DECK_GRID_COLUMNS = WIDTH < 500 ? 2 : WIDTH < 900 ? 4 : 8
+export const DECK_GRID_GAP = 16
+export const DECK_GRID_WIDTH = (wp(100) - DEFAULT_HORIZONTAL_PADDING - (DECK_GRID_COLUMNS * DECK_GRID_GAP)) / DECK_GRID_COLUMNS
+export const DECK_GRID_HEIGHT = DECK_GRID_WIDTH * (API_CARD_HEIGHT / API_CARD_WITH)
+
 
 export const AppConstants = {
     icon: {

@@ -1,66 +1,70 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet } from 'react-native'
 import DropDownPicker from 'react-native-dropdown-picker'
 import { Colors } from '@/constants/Colors'
-import { PICKER_BADGE_DOT_COLORS } from '@/constants/AppConstants'
 import AppStyle from '@/constants/AppStyle'
 import { useState } from 'react'
 import React from 'react'
 
-const CustomDropDownPicker = ({
+
+const MultipleDropDownPicker = ({
     title,
     options,
     optionKey,
     applyPicker,
     data,     
     zindex,
-    multiple,
-    badgeDotColors
+    allowEmptyValues = true,
+    defaultValue = [],
+    searchable = false    
 }: {
     title: string,
     options: Map<string, string | string[] | null>,
     optionKey: string,
     applyPicker: () => void,
     data: string[],    
-    zindex: number,    
-    multiple: boolean,
-    badgeDotColors?: string[]
+    zindex: number,
+    allowEmptyValues?: boolean,   
+    searchable?: boolean,    
+    defaultValue?: string[]
 }) => {
-    const [open, setOpen] = useState(false);   
-    const [value, setValue] = useState<string[] | null>(multiple ? [] : null)
+    const [open, setOpen] = useState(false);        
+    const [value, setValue] = useState<string[]>(defaultValue)
     const [items, setItems] = useState(data.map((v) => {return {label: v, value: v}}))
 
-    const handlePress = async (value: any) => {
-        options.set(optionKey, value)
+    const handlePress = async (v: any) => {        
+        options.set(optionKey, v)        
         await applyPicker()
-    }
-    
+    }        
+
     return (        
-        <DropDownPicker            
-            zIndex={zindex}            
+        <DropDownPicker
+            zIndex={zindex}                
             open={open}
-            style={{backgroundColor: Colors.gray, borderWidth: 1, borderRadius: 4, borderColor: Colors.orange}}
+            style={{backgroundColor: Colors.gray, borderWidth: 1, borderRadius: 0, borderColor: Colors.orange}}
             disabledStyle={{opacity: 0.5}}                             
             items={items}
             setOpen={setOpen}
             theme='DARK'
+            listMode="FLATLIST"
+            searchable={searchable}
             value={value}
             setValue={setValue}
             setItems={setItems}
-            multiple={multiple}
+            multiple={true}
             mode='BADGE'
-            badgeProps={{activeOpacity: 0.5}}
-            searchable={true}            
+            badgeProps={{activeOpacity: 0.5}}            
             placeholder={title}
             badgeTextStyle={{color: Colors.background}}
-            badgeColors={Colors.white}
-            badgeDotColors={badgeDotColors ? badgeDotColors : PICKER_BADGE_DOT_COLORS}
-            textStyle={AppStyle.textRegular}            
+            badgeColors={Colors.white} 
+            showBadgeDot={false}           
+            textStyle={AppStyle.textRegular}
+            min={allowEmptyValues ? 0 : 1}            
             onChangeValue={(value: any) => handlePress(value)}
             dropDownContainerStyle={{backgroundColor: Colors.gray}}
-        />            
+        />
     );
 }
 
-export default CustomDropDownPicker
+export default MultipleDropDownPicker
 
 const styles = StyleSheet.create({})

@@ -31,11 +31,26 @@ export type YuGiOhDeck = {
     avg_attack: number
     avg_defence: number
     avg_level: number
-    archetypes: string[]
-    attributes: string[]
-    frametypes: string[]
-    races: string[]
-    types: string[]
+    archetypes: string[] | {
+        [x: string]: any;
+        [x: number]: string;
+    }[]
+    attributes: string[] | {
+        [x: string]: any;
+        [x: number]: string;
+    }[]
+    frametypes: string[] | {
+        [x: string]: any;
+        [x: number]: string;
+    }[]
+    races: string[] | {
+        [x: string]: any;
+        [x: number]: string;
+    }[]
+    types: string[] | {
+        [x: string]: any;
+        [x: number]: string;
+    }[]
 }
 
 export interface UserDB {    

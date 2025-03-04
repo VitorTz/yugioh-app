@@ -1,21 +1,20 @@
-import { ActivityIndicator, NativeScrollEvent, StyleSheet, View, Text } from 'react-native'
-import { FlashList, useBlankAreaTracker } from '@shopify/flash-list'
-import { AppConstants, GRID_COLUMNS } from '@/constants/AppConstants'
-import ImageCard from './ImageCard'
-import {Image} from 'expo-image'
-import React, { useEffect, useRef, useState } from 'react'
-import { YuGiOhCard } from '@/helpers/types'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { FlashList } from '@shopify/flash-list'
+import { DECK_GRID_COLUMNS } from '@/constants/AppConstants'
+import React from 'react'
+import { YuGiOhDeck } from '@/helpers/types'
 import { Colors } from '@/constants/Colors'
+import DeckCard from './DeckCard'
 
 
 interface ImageGridProps {
-    images: YuGiOhCard[]
+    decks: YuGiOhDeck[]
     onEndReached: () => void
     isLoading: boolean
     hasResult: boolean
 }
 
-const ImageGrid = ({images, onEndReached, isLoading, hasResult}: ImageGridProps) => {  
+const DeckGrid = ({decks, onEndReached, isLoading, hasResult}: ImageGridProps) => {  
 
   const Footer = () => {
     return (
@@ -32,9 +31,9 @@ const ImageGrid = ({images, onEndReached, isLoading, hasResult}: ImageGridProps)
   return (        
     <View style={styles.container}>
         <FlashList          
-          data={images}
+          data={decks}
           keyboardShouldPersistTaps={"handled"}
-          numColumns={GRID_COLUMNS}
+          numColumns={DECK_GRID_COLUMNS}
           estimatedItemSize={80}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
@@ -42,7 +41,7 @@ const ImageGrid = ({images, onEndReached, isLoading, hasResult}: ImageGridProps)
           renderItem={
               ({item, index}) => {
                 return (
-                  <ImageCard key={index} index={index} item={item}/>
+                  <DeckCard key={index} index={index} deck={item}/>
                 )
             }
           }
@@ -51,7 +50,7 @@ const ImageGrid = ({images, onEndReached, isLoading, hasResult}: ImageGridProps)
   )
 }
 
-export default ImageGrid
+export default DeckGrid
 
 const styles = StyleSheet.create({
   container: {

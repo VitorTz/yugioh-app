@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient, PostgrestError, Session } from '@supabase/supabase-js'
-import { CardOrderBy, GlobalContext, ImageDB, UserDB, YuGiOhCard } from '@/helpers/types'
+import { CardOrderBy, GlobalContext, ImageDB, UserDB, YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
 import { CARD_SORT_OPTIONS, CARD_FETCH_LIMIT, DECK_FETCH_LIMIT } from '@/constants/AppConstants'
 
 
@@ -84,7 +84,7 @@ export async function supaFetchCards(
   searchTxt: string | null,
   options: Map<any, any>,
   page: number
-): Promise<{cards: YuGiOhCard[], error: PostgrestError | null}> {
+): Promise<{data: YuGiOhCard[], error: PostgrestError | null}> {
   let query = supabase.from('cards').select(`
     card_id,
     name,
@@ -135,7 +135,7 @@ export async function supaFetchCards(
   query = query.range(page * CARD_FETCH_LIMIT, ((page + 1) * CARD_FETCH_LIMIT) - 1)
   
   const {data, error} = await query.overrideTypes<YuGiOhCard[]>()
-  return {cards: data ? data : [], error: error}  
+  return {data: data ? data : [], error: error}  
 }
 
 
@@ -143,7 +143,7 @@ export const supaFetchDecks = async (
   searchTxt: string | null,
   options: Map<any, any>, 
   page: number
-) => {
+): Promise<{data: YuGiOhDeck[], error: PostgrestError | null}> => {
   let query = supabase.from("decks").select(`
     deck_id,
     name,
@@ -159,6 +159,9 @@ export const supaFetchDecks = async (
     races,
     types
   `)
+  
+  console.log("oi")
+  console.log(options)
 
   if (searchTxt) {
     query = query.ilike("name", `%${searchTxt}%`)
@@ -191,6 +194,7 @@ export const supaFetchDecks = async (
   if (options.has('races')) {
     options.get('races').forEach(
       (value: string) => {
+        console.log("races", value)
         query = query.contains('races', [value])
       }
     )
@@ -216,13 +220,13 @@ export const supaFetchDecks = async (
     query = query.gte("avg_level", options.get("avg_level"))
   }
 
-  const orderBy: CardOrderBy = CARD_SORT_OPTIONS.includes(options.get("orderBy")) ? options.get("orderBy") : 'name'
-  
-  const {data, error} = await query.order(
-    orderBy,
-    {ascending: options.get("order") == "ASC"}
-  ).range(page * DECK_FETCH_LIMIT, ((page + 1) * DECK_FETCH_LIMIT) - 1)
+  const orderBy = options.get("sort")
 
-  return {data: data, error: error}
+  const {data, error} = await query.order(
+    orderBy ? orderBy : 'name',
+    {ascending: options.get("sortDirection") == "ASC"}
+  ).range(page * DECK_FETCH_LIMIT, ((page + 1) * DECK_FETCH_LIMIT) - 1).overrideTypes<YuGiOhDeck[]>()
+
+  return {data: data ? data : [], error: error}
   
 }
