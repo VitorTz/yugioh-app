@@ -1,16 +1,14 @@
-import { TextInput, NativeScrollEvent, Pressable, SafeAreaView, StyleSheet, Text, View, KeyboardAvoidingView, Keyboard, Platform, ActivityIndicator } from 'react-native'
-import AppStyle from '@/constants/AppStyle'
-import React, { useEffect, useState, useRef, useMemo } from 'react'
-import { supabase, supaFetchCards, supaFetchDecks } from '@/lib/supabase'
+import { TextInput, Pressable, SafeAreaView, StyleSheet, Animated, View, KeyboardAvoidingView, Keyboard, Platform } from 'react-native'
+import React, { useEffect, useState, useRef } from 'react'
+import { supaFetchCards, supaFetchDecks } from '@/lib/supabase'
 import { YuGiOhCard } from '@/helpers/types'
 import { useCallback } from 'react'
-import {at, debounce, filter} from 'lodash'
+import { debounce } from 'lodash'
 import ImageGrid from '@/components/ImageGrid'
 import { Colors } from '@/constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import { AppConstants } from "@/constants/AppConstants";
 import { wp, hp } from '@/helpers/util'
-import CardFilters from '@/components/CardFilters'
 import CardCustomPicker from '@/components/CardCustomPicker'
 
 
@@ -54,8 +52,9 @@ const Database = () => {
   const [images, setImages] = useState<YuGiOhCard[]>([])
   const [isLoading, setLoading] = useState(false)  
   const [hasResult, setHasResults] = useState(true)      
-  const [filterType, setFilterType] = useState<"Card" | "Deck">("Card")
-  const textRef = useRef<TextInput>(null)
+  const [filterType, setFilterType] = useState<"Card" | "Deck">("Card")  
+  const [expanded, setExpanded] = useState(false);
+  const textRef = useRef<TextInput>(null)  
 
   
   const fetchCards = async (append: boolean = false) => {
@@ -75,7 +74,7 @@ const Database = () => {
     setLoading(false)
   }
 
-  useEffect(() => { 
+  useEffect(() => {      
       cardPage = 0
       deckPage = 0
       textRef.current?.clear()      
@@ -108,6 +107,7 @@ const Database = () => {
   )
 
   const applyFilter = async () => {    
+    console.log("apply")
     switch (filterType) {
       case "Card":
         cardPage = 0       
@@ -119,6 +119,11 @@ const Database = () => {
     }    
   }
 
+  const debounceApplyFilter = useCallback(
+    debounce(applyFilter, 400),
+    []
+  )
+
   const handleEndReached = useCallback(async () => {
     if (!isLoading && hasResult) {      
       console.log("end")
@@ -127,9 +132,11 @@ const Database = () => {
     }
   }, [isLoading]);
 
-  const openFilters = () => {
 
-  }
+  const toggleAnimation = () => {
+    Keyboard.dismiss()
+    setExpanded(!expanded);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>      
@@ -144,13 +151,17 @@ const Database = () => {
                 style={styles.input}
             />
             <View style={{position: 'absolute', right: 10, top: 0, bottom: 0, alignItems: "center", justifyContent: "center"}}>
-              <Pressable onPress={() => openFilters()} hitSlop={AppConstants.hitSlopLarge}>
-                <Ionicons size={28} color={Colors.orange} name="options-outline"></Ionicons>
+              <Pressable onPress={() => toggleAnimation()} hitSlop={AppConstants.hitSlopLarge}>
+                {
+                  expanded ? 
+                  <Ionicons size={28} color={Colors.orange} name="chevron-up-circle"></Ionicons> :
+                  <Ionicons size={28} color={Colors.orange} name="chevron-down-circle"></Ionicons>
+                }
               </Pressable>
             </View>
           </View>   
-          <View style={{width: '100%', marginBottom: 10}} >
-            <CardCustomPicker applyFilter={applyFilter} options={cardOptions}/>
+          <View style={{width: '100%', marginBottom: 10, display: expanded ?  "flex" : "none"}} >
+            <CardCustomPicker applyFilter={debounceApplyFilter} options={cardOptions}/>
           </View>
           <ImageGrid 
             isLoading={isLoading} 

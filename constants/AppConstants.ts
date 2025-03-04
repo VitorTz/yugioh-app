@@ -782,7 +782,7 @@ export const ATTRIBUTES = [
   "Wind"
 ].sort()
 
-export const CARD_ORDER_BY_OPTIONS: CardOrderBy[] = [
+export const CARD_SORT_OPTIONS: CardOrderBy[] = [
   'name',
   'attack',
   'defence',
@@ -790,7 +790,7 @@ export const CARD_ORDER_BY_OPTIONS: CardOrderBy[] = [
 ]
 
 
-export const ORDER_OPTIONS: Order[] = [
+export const SORT_DIRECTIONS: Order[] = [
   "ASC",
   "DESC"
 ]

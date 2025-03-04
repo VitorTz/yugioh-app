@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient, PostgrestError, Session } from '@supabase/supabase-js'
 import { CardOrderBy, GlobalContext, ImageDB, UserDB, YuGiOhCard } from '@/helpers/types'
-import { CARD_ORDER_BY_OPTIONS, CARD_FETCH_LIMIT, DECK_FETCH_LIMIT } from '@/constants/AppConstants'
+import { CARD_SORT_OPTIONS, CARD_FETCH_LIMIT, DECK_FETCH_LIMIT } from '@/constants/AppConstants'
 
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL : ""
@@ -123,12 +123,17 @@ export async function supaFetchCards(
     }
   )
 
-  const orderBy = options.get("orderBy")  
 
-  query = query.order(
-    orderBy ? orderBy : "name",
-    {ascending: options.get("order") == "ASC", nullsFirst: false}
-  ).range(page * CARD_FETCH_LIMIT, ((page + 1) * CARD_FETCH_LIMIT) - 1)
+  const orderBy = options.get("sort")  
+  if (orderBy) {
+    query = query.order(
+      orderBy ? orderBy : "name",
+      {ascending: options.get("sortDirection") != "DESC", nullsFirst: false}
+    )
+  }
+
+  query = query.range(page * CARD_FETCH_LIMIT, ((page + 1) * CARD_FETCH_LIMIT) - 1)
+  
   const {data, error} = await query.overrideTypes<YuGiOhCard[]>()
   return {cards: data ? data : [], error: error}  
 }
@@ -211,7 +216,7 @@ export const supaFetchDecks = async (
     query = query.gte("avg_level", options.get("avg_level"))
   }
 
-  const orderBy: CardOrderBy = CARD_ORDER_BY_OPTIONS.includes(options.get("orderBy")) ? options.get("orderBy") : 'name'
+  const orderBy: CardOrderBy = CARD_SORT_OPTIONS.includes(options.get("orderBy")) ? options.get("orderBy") : 'name'
   
   const {data, error} = await query.order(
     orderBy,
