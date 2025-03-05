@@ -57,10 +57,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%', 
     flex: 1, 
-    padding: 10,    
-    backgroundColor: Colors.gray,     
-    borderWidth: 1,
-    borderColor: Colors.orange,    
+    padding: 10    
   },
   noResultContainer: {
     marginTop: 16, 

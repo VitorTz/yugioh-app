@@ -31,7 +31,7 @@ import DeckGrid from '@/components/grid/DeckGrid'
 var cardOptions = new Map<string, string | null | string[]>()
 var deckOptions = new Map<string, string | null | string[]>()
 var deckOrCard = new Map<string, string>()
-var searchText: string | null
+var searchText: string | null = null
 var cardPage: number = 0
 var deckPage: number = 0
 
@@ -45,9 +45,6 @@ function resetCardFilter() {
   cardOptions.set('frametype', [])
   cardOptions.set('race', [])
   cardOptions.set('type', [])
-  cardOptions.set('attack', null)
-  cardOptions.set('defence', null)
-  cardOptions.set('level', null)
   cardOptions.set('sort', 'name')
   cardOptions.set('sortDirection', 'ASC')
 }
@@ -57,10 +54,7 @@ function resetDeckFilter() {
   deckOptions.set('attributes', [])
   deckOptions.set('frametypes', [])
   deckOptions.set('races', [])
-  deckOptions.set('types', [])
-  deckOptions.set('avg_attack', null)
-  deckOptions.set('avg_defence', null)
-  deckOptions.set('avg_level', null)
+  deckOptions.set('types', [])  
 }
 
 const Database = () => {
@@ -77,8 +71,7 @@ const Database = () => {
 
   
   const fetchCards = async (append: boolean = false) => {
-    setLoading(true)
-      console.log("card page", cardPage)
+    setLoading(true)      
       const {data, error} = await supaFetchCards(searchText, cardOptions, cardPage)      
       setCardHasResults(data.length > 0)
       if (data) {      
@@ -87,42 +80,37 @@ const Database = () => {
     setLoading(false)
   }
 
-  const fetchDecks = async (append: boolean = false) => {
-    setLoading(true)
-      console.log("deck page", deckPage)
+  const fetchDecks = async (append: boolean = false) => {    
+    setLoading(true)      
       const {data, error} = await supaFetchDecks(searchText, deckOptions, deckPage)      
       setDeckHasResults(data.length > 0)
       if (data) {
         append ? setDecks([...decks, ...data]) : setDecks([...data])
       }
-    setLoading(false)
+    setLoading(false)    
   }
 
   useEffect(() => {      
+      textRef.current?.clear()
+      searchText = null
       cardPage = 0
       deckPage = 0      
       fetchCards()
       fetchDecks()      
-      textRef.current?.clear()      
-      // switch (filterType) {
-      //     case "Card":
-      //       fetchCards()
-      //       break
-      //     default:
-      //       break
-      // }      
     }, 
     []
   )
 
-  const handleSearch = async (text: string | null, append: boolean = false) => {    
+  const handleSearch = async (text: string | null, append: boolean = false) => {        
     searchText = text ? text : null
     switch (filterType) {
-      case "Card":        
+      case "Card":
+        console.log("search for card")
         cardPage = append ? cardPage + 1 : 0
         await fetchCards()
         break
-      case "Deck":        
+      case "Deck":
+      console.log("search for deck")
         deckPage = append ? deckPage + 1 : 0
         await fetchDecks()
         break
@@ -133,26 +121,24 @@ const Database = () => {
 
   const debounceSearch = useCallback(
       debounce(handleSearch, 400),
-      []
+      [filterType]
   )
 
-  const applyFilter = async () => {
+  const applyFilter = async () => {    
+    console.log(filterType)
     switch (filterType) {
       case "Card":
         cardPage = 0       
-        await fetchCards()
+        await handleSearch(searchText)
         break
       case "Deck":
         deckPage = 0
-        await fetchDecks()
+        await handleSearch(searchText)
+        break
+      default:
         break
     }    
   }
-
-  const debounceApplyFilter = useCallback(
-    debounce(applyFilter, 400),
-    []
-  )
 
   const handleEndReached = useCallback(async () => {
     const hasResult = filterType == "Card" ? cardHasResult : deckHasResults
@@ -176,7 +162,21 @@ const Database = () => {
   const changeFilterType = () => {
     const s = deckOrCard.get("filterType")    
     if (s == "Deck" || s == "Card" && s != filterType) {      
+      Keyboard.dismiss()
+      searchText = null
+      textRef.current?.clear()
       setFilterType(s)
+      console.log("changind to", s)
+      switch (s) {
+        case "Deck":
+          setDeckPickerDropDownIsExpanded(true)
+          setCardPickerDropDownIsExpanded(false)
+          break
+        case "Card":
+          setCardPickerDropDownIsExpanded(true)
+          setDeckPickerDropDownIsExpanded(false)
+          break
+      }
     }
   }
 
@@ -222,11 +222,11 @@ const Database = () => {
           </View>
 
           <View style={{width: '100%', marginBottom: 10, display: cardPickerDropDownIsExpanded ?  "flex" : "none"}} >
-            <CardCustomPicker applyFilter={debounceApplyFilter} options={cardOptions}/>
+            <CardCustomPicker applyFilter={applyFilter} options={cardOptions}/>
           </View>
 
           <View style={{width: '100%', marginBottom: 10, display: deckPickerDropDownIsExpanded ?  "flex" : "none"}} >
-              <DeckCustomPicker applyFilter={debounceApplyFilter} options={deckOptions} />
+              <DeckCustomPicker applyFilter={applyFilter} options={deckOptions} />
           </View>
           
           <View style={{width: '100%', flex: 1, display: filterType == "Card" ?  "flex" : "none"}} >

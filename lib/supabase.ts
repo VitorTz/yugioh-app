@@ -115,15 +115,6 @@ export async function supaFetchCards(
     }
   )
 
-  GEQ_COMP.forEach(
-    (value) => {
-      if (options.get(value)) {
-        query = query.gte(value, options.get(value))
-      }
-    }
-  )
-
-
   const orderBy = options.get("sort")  
   if (orderBy) {
     query = query.order(
@@ -159,16 +150,15 @@ export const supaFetchDecks = async (
     races,
     types
   `)
-  
-  console.log("oi")
-  console.log(options)
+    
+  console.log(searchTxt, options)  
 
   if (searchTxt) {
     query = query.ilike("name", `%${searchTxt}%`)
   }
 
   if (options.has('archetypes')) {
-    options.get('archetypes').forEach(
+      options.get('archetypes').forEach(
       (value: string) => {
         query = query.contains('archetypes', [value])
       }
@@ -176,7 +166,7 @@ export const supaFetchDecks = async (
   }
 
   if (options.has('attributes')) {
-    options.get('attributes').forEach(
+      options.get('attributes').forEach(
       (value: string) => {
         query = query.contains('attributes', [value])
       }
@@ -184,7 +174,7 @@ export const supaFetchDecks = async (
   }
 
   if (options.has('frametypes')) {
-    options.get('frametypes').forEach(
+      options.get('frametypes').forEach(
       (value: string) => {
         query = query.contains('frametypes', [value])
       }
@@ -192,7 +182,7 @@ export const supaFetchDecks = async (
   }
 
   if (options.has('races')) {
-    options.get('races').forEach(
+      options.get('races').forEach(
       (value: string) => {
         console.log("races", value)
         query = query.contains('races', [value])
@@ -201,30 +191,16 @@ export const supaFetchDecks = async (
   }
 
   if (options.has('types')) {
-    options.get('types').forEach(
+      options.get('types').forEach(
       (value: string) => {
         query = query.contains('types', [value])
       }
     )
-  }
-
-  if (options.get("avg_attack")) {
-    query = query.gte("avg_attack", options.get("avg_attack"))
-  }
-
-  if (options.get("avg_defence")) {
-    query = query.gte("avg_defence", options.get("avg_defence"))
-  }
-
-  if (options.get("avg_level")) {
-    query = query.gte("avg_level", options.get("avg_level"))
-  }
-
-  const orderBy = options.get("sort")
+  }  
 
   const {data, error} = await query.order(
-    orderBy ? orderBy : 'name',
-    {ascending: options.get("sortDirection") == "ASC"}
+    'name',
+    {ascending: true}
   ).range(page * DECK_FETCH_LIMIT, ((page + 1) * DECK_FETCH_LIMIT) - 1).overrideTypes<YuGiOhDeck[]>()
 
   return {data: data ? data : [], error: error}

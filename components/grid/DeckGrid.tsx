@@ -31,7 +31,7 @@ const DeckGrid = ({decks, onEndReached, isLoading, hasResult}: ImageGridProps) =
   return (        
     <View style={styles.container}>
         <FlashList          
-          data={decks}
+          data={decks}          
           keyboardShouldPersistTaps={"handled"}
           numColumns={DECK_GRID_COLUMNS}
           estimatedItemSize={80}
@@ -56,10 +56,9 @@ const styles = StyleSheet.create({
   container: {
     width: '100%', 
     flex: 1, 
-    padding: 10,    
-    backgroundColor: Colors.gray,     
-    borderWidth: 1,
-    borderColor: Colors.orange,    
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10    
   },
   noResultContainer: {
     marginTop: 16, 
