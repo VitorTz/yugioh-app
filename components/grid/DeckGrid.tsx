@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
-import { FlashList } from '@shopify/flash-list'
+import { MasonryFlashList, FlashList } from '@shopify/flash-list'
 import { DECK_GRID_COLUMNS } from '@/constants/AppConstants'
 import React from 'react'
 import { YuGiOhDeck } from '@/helpers/types'
@@ -30,7 +30,7 @@ const DeckGrid = ({decks, onEndReached, isLoading, hasResult}: ImageGridProps) =
 
   return (        
     <View style={styles.container}>
-        <FlashList          
+        <MasonryFlashList          
           data={decks}          
           keyboardShouldPersistTaps={"handled"}
           numColumns={DECK_GRID_COLUMNS}
@@ -55,10 +55,7 @@ export default DeckGrid
 const styles = StyleSheet.create({
   container: {
     width: '100%', 
-    flex: 1, 
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 10    
+    flex: 1,    
   },
   noResultContainer: {
     marginTop: 16, 

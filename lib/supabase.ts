@@ -97,7 +97,9 @@ export async function supaFetchCards(
     frametype,
     race,
     type,
-    image_url`  
+    image_url,
+    cropped_image_url
+  `
   )
 
   if (searchTxt) {
@@ -139,7 +141,7 @@ export const supaFetchDecks = async (
     deck_id,
     name,
     type,
-    image_url,
+    image_url,    
     num_cards,
     avg_attack,
     avg_defence,
@@ -199,9 +201,11 @@ export const supaFetchDecks = async (
   }  
 
   const {data, error} = await query.order(
-    'name',
-    {ascending: true}
-  ).range(page * DECK_FETCH_LIMIT, ((page + 1) * DECK_FETCH_LIMIT) - 1).overrideTypes<YuGiOhDeck[]>()
+    'name', {ascending: true}
+  ).range(
+    page * DECK_FETCH_LIMIT, 
+    (page * DECK_FETCH_LIMIT) + DECK_FETCH_LIMIT - 1
+  ).overrideTypes<YuGiOhDeck[]>()
 
   return {data: data ? data : [], error: error}
   

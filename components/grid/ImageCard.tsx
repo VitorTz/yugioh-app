@@ -3,8 +3,10 @@ import {
     CARD_GRID_HEIGHT, 
     CARD_GRID_WIDTH 
 } from '@/constants/AppConstants'
-import { StyleSheet, Pressable } from 'react-native'
+import { StyleSheet, Pressable, Text, View } from 'react-native'
+import AppStyle from '@/constants/AppStyle'
 import { YuGiOhCard } from '@/helpers/types'
+import { Colors } from '@/constants/Colors'
 import { Keyboard } from 'react-native'
 import { router } from 'expo-router'
 import { Image } from 'expo-image'
@@ -42,11 +44,37 @@ const ImageCard = ({card, index}: ImageCardProps) => {
         )
     }
 
+    const CardInfo = ({title, info}: {title: string, info: string | number | null | undefined}) => {
+        if (!info) {
+            return <></>
+        }
+        return (
+            <Text style={[AppStyle.textRegular, {color: Colors.orange}]} >
+                {title}:{' '}
+                <Text style={[AppStyle.textRegular, {color: Colors.white}]} >
+                    {info}
+                </Text>
+            </Text>
+        )
+    }
+    
     return (        
-        <Pressable onPress={() => handlePress()} style={{alignItems: "center", flex: 1, marginTop: index >= CARD_GRID_COLUMNS ? 10 : 0}}>
-            <Image style={styles.image} source={card.image_url}/>
-        </Pressable>        
-        
+        <Pressable onPress={() => handlePress()} style={{flex: 1,  alignItems: "center", marginTop: index >= CARD_GRID_COLUMNS ? 10 : 0}}>
+            <Image contentFit='cover'  style={styles.image} source={card.cropped_image_url}/>
+            <View style={{padding: 10, backgroundColor: Colors.gray, paddingVertical: 10, width: CARD_GRID_WIDTH, borderTopWidth: 2, borderColor: Colors.orange}} >
+                <CardInfo title='Name' info={card.name} />
+                <View style={{flexDirection: "row", columnGap: 20, flexWrap: "wrap", alignItems: "center", justifyContent: "flex-start"}} >
+                    <CardInfo title='Attack' info={card.attack} />
+                    <CardInfo title='Defence' info={card.defence} />
+                    <CardInfo title='Level' info={card.level} />
+                    <CardInfo title='Archetype' info={card.archetype} />
+                    <CardInfo title='Attribute' info={card.attribute} />
+                    <CardInfo title='Frametype' info={card.frametype} />
+                    <CardInfo title='Race' info={card.race} />
+                    <CardInfo title='Type' info={card.type} />                
+                </View>
+            </View>
+        </Pressable>
     )
 }
 

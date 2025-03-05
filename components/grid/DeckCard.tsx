@@ -1,9 +1,7 @@
 import {     
     DECK_GRID_COLUMNS, 
     DECK_GRID_HEIGHT, 
-    DECK_GRID_WIDTH,
-    DECK_IMAGE_HEIGHT,
-    DECK_IMAGE_WIDTH
+    DECK_GRID_WIDTH    
 } from '@/constants/AppConstants'
 import { StyleSheet, Pressable, View, Text } from 'react-native'
 import { YuGiOhDeck } from '@/helpers/types'
@@ -24,39 +22,45 @@ interface ImageCardProps {
 const DeckCard = ({deck, index}: ImageCardProps) => {    
     
     const handlePress = () => {
-        Keyboard.dismiss()
-        console.log(deck.name)
-    }    
+        Keyboard.dismiss()            
+        router.push({pathname: "/(pages)/deckPage", params: deck})
+    }
 
-    const DeckInfo = ({title, info}: {title: string, info: string | number}) => {
+    const DeckInfo = ({title}: {title: string | number}) => {
         return (
-            <View style={{width: '100%', flexDirection: "row", gap: 4}} >
-                <Text style={[AppStyle.textRegular, {color: Colors.orange}]} >{title}:</Text>
-                <Text style={AppStyle.textRegular} >{info}</Text>
-            </View>
+            <Text style={[AppStyle.textRegular, {color: Colors.white}]} >
+                {title}
+            </Text>            
         )
     }
 
     return (        
-        <Pressable onPress={() => handlePress()} style={{alignItems: "center", paddingVertical: 30, justifyContent: "center", borderRadius: 0, flex: 1, borderWidth: 1, borderColor: Colors.orange, marginTop: index >= DECK_GRID_COLUMNS ? 10 : 0}}>            
-            <View style={{width: '100%', height: '100%'}}>
-                <Image contentFit='scale-down' style={{width: '100%', height: DECK_IMAGE_HEIGHT, alignSelf: "center"}}  source={deck.image_url} />
+        <Pressable onPress={() => handlePress()} style={{flex: 1,  alignItems: "center", marginTop: index >= DECK_GRID_COLUMNS ? 10 : 0}}>
+            <Image contentFit='cover'  style={styles.image} source={"https://res.cloudinary.com/dutf5vtcr/image/upload/v1741175439/yu-gi-oh/cropped/1/fuezn4qrnt9wxidqfjnw.jpg"}/>            
+            <View style={{padding: 10, backgroundColor: Colors.gray, paddingVertical: 20, width: DECK_GRID_WIDTH, borderTopWidth: 4, borderColor: Colors.orange}} >
+                <DeckInfo title={deck.name} />
+                <DeckInfo title={`${deck.type} Deck`} />
+                <DeckInfo title={`${deck.num_cards} cards`} />
             </View>
-            <View style={{width: '100%', height: '30%', padding: 20, borderTopWidth: 1, borderColor: Colors.orange, marginHorizontal: 20, position: 'absolute', bottom: 0, backgroundColor: Colors.background}} >
-                <DeckInfo title='Name' info={deck.name} />
-                <DeckInfo title='Type' info={deck.type} />
-                <DeckInfo title='Cards' info={deck.num_cards} />
-            </View>
-        </Pressable>        
-        
+        </Pressable>
     )
 }
 
 export default DeckCard
 
-const styles = StyleSheet.create({    
+const styles = StyleSheet.create({
+    container: {
+        alignItems: "center", 
+        paddingVertical: 30, 
+        justifyContent: "center", 
+        borderRadius: 0, 
+        width: DECK_GRID_WIDTH,
+        height: DECK_GRID_HEIGHT,
+        borderWidth: 1, 
+        borderColor: Colors.orange 
+    },
     image: {    
-        width: DECK_GRID_WIDTH,        
-        height: DECK_GRID_HEIGHT
+        width: DECK_GRID_WIDTH,
+        height: DECK_GRID_HEIGHT        
     }   
 })

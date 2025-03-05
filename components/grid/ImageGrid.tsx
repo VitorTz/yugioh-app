@@ -1,5 +1,5 @@
 import { ActivityIndicator, NativeScrollEvent, StyleSheet, View, Text } from 'react-native'
-import { FlashList, useBlankAreaTracker } from '@shopify/flash-list'
+import { MasonryFlashList } from '@shopify/flash-list'
 import { AppConstants, CARD_GRID_COLUMNS } from '@/constants/AppConstants'
 import ImageCard from './ImageCard'
 import {Image} from 'expo-image'
@@ -31,7 +31,7 @@ const ImageGrid = ({images, onEndReached, isLoading, hasResult}: ImageGridProps)
 
   return (        
     <View style={styles.container}>
-        <FlashList          
+        <MasonryFlashList          
           data={images}
           keyboardShouldPersistTaps={"handled"}
           numColumns={CARD_GRID_COLUMNS}
@@ -56,8 +56,7 @@ export default ImageGrid
 const styles = StyleSheet.create({
   container: {
     width: '100%', 
-    flex: 1, 
-    padding: 10    
+    flex: 1
   },
   noResultContainer: {
     marginTop: 16, 

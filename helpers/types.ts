@@ -20,6 +20,7 @@ export type YuGiOhCard = {
     race: string | null | undefined
     type: string 
     image_url: string
+    cropped_image_url: string
 }
 
 export type YuGiOhDeck = {
@@ -27,6 +28,7 @@ export type YuGiOhDeck = {
     deck_id: number
     type: string
     image_url: string
+    cropped_image_url: string
     num_cards: number
     avg_attack: number
     avg_defence: number
