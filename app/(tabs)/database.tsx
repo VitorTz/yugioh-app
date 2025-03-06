@@ -101,7 +101,7 @@ const Database = () => {
   )
 
   const handleSearch = async (text: string | null, append: boolean = false) => {        
-    searchText = text ? text : null
+    searchText = text ? text.trimEnd() : null
     switch (filterType) {
       case "Card":
         console.log("search for card")

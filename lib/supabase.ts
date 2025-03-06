@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { createClient, PostgrestError, Session } from '@supabase/supabase-js'
+import { AuthError, createClient, PostgrestError, Session } from '@supabase/supabase-js'
 import { GlobalContext, ImageDB, UserDB, YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
 import { CARD_FETCH_LIMIT, DECK_FETCH_LIMIT } from '@/constants/AppConstants'
 
@@ -75,10 +75,36 @@ export async function supaFechGlobalContext(session: Session): Promise<GlobalCon
   }
 }
 
+export async function supaAddDeckToUser(deck_id: number): Promise<{success: boolean, error: PostgrestError | AuthError | null}> {
+  const {data: {session}, error: err} = await supabase.auth.getSession()
+  if (err) {
+    console.log(err.message)
+    return {success: false, error: err}
+  }  
+  const {data, error} = await supabase.from("user_decks").insert(
+    [{"user_id": session!.user.id, "deck_id": deck_id}]
+  ).select()
+  return {success: error ? false : true, error: error}  
+}
+
+export async function supaAddCardToCollection(card_id: number, total: number) {
+  const {data: {session}, error: err} = await supabase.auth.getSession()
+  if (err) {
+    console.log(err.message)
+    return {success: false, error: err}
+  } 
+  // sum if already exists or insert if not
+  const {data, error} = await supabase.from("user_cards").insert(
+    [{"user_id": session!.user.id, "card_id": card_id, "total": total}]
+  ).select()
+  return {success: error ? false : true, error: error}  
+}
+
 
 export async function supaFetchCardsFromDeck(deck_id: number): Promise<YuGiOhCard[]> {
     const {data, error} = await supabase.from("deck_cards").select(
       `
+      num_cards,
       cards (
         card_id,
         name,
@@ -97,7 +123,21 @@ export async function supaFetchCardsFromDeck(deck_id: number): Promise<YuGiOhCar
       )
       `
     ).eq("deck_id", deck_id).overrideTypes<YuGiOhCard[]>()
-    return data ? data.map(item => item.cards) : []
+    let cards: YuGiOhCard[] = []
+    data?.forEach(item => {
+      for (let i = 0; i < item.num_cards; i++) {
+        cards.push(item.cards)
+      }
+    })
+    cards.sort((a, b) => {
+        if (a.name < b.name)
+          return -1
+        if (a.name == b.name)
+          return 0
+        return 1
+      }
+    )
+    return cards
 }
 
 

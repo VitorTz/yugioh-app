@@ -35,7 +35,7 @@ const ImageGrid = ({images, onEndReached, columns, isLoading, hasResult}: ImageG
         <MasonryFlashList          
           data={images}
           keyboardShouldPersistTaps={"handled"}
-          numColumns={CARD_GRID_COLUMNS}
+          numColumns={columns}
           estimatedItemSize={80}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
