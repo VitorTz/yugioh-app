@@ -16,8 +16,8 @@ const _layout = () => {
                 <Stack.Screen name='index' options={{headerShown: false}} />
                 <Stack.Screen name='(auth)/signin' options={{headerShown: false}} />
                 <Stack.Screen name='(auth)/signup' options={{headerShown: false}} />
-                <Stack.Screen name='(pages)/profilePhoto' options={{headerShown: false}} />
-                <Stack.Screen name='(pages)/profileInfo' options={{headerShown: false}} />
+                <Stack.Screen name='(pages)/changeProfileIcon' options={{headerShown: false}} />
+                <Stack.Screen name='(pages)/changeProfileInfo' options={{headerShown: false}} />
                 <Stack.Screen name='(pages)/cardPage' options={{headerShown: false, presentation: "transparentModal", animation: "fade"}} />
                 <Stack.Screen name='(pages)/deckPage' options={{headerShown: false, presentation: "transparentModal", animation: "fade"}} />
                 <Stack.Screen name='(tabs)' options={{headerShown: false}} />

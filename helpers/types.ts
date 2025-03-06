@@ -11,6 +11,7 @@ export type YuGiOhCard = {
     name: string
     card_id: number
     descr: string
+    color: string
     attack: number | null | undefined
     defence: number | null | undefined
     level: number | null | undefined
@@ -27,8 +28,7 @@ export type YuGiOhDeck = {
     name: string
     deck_id: number
     type: string
-    image_url: string
-    cropped_image_url: string
+    image_url: string    
     num_cards: number
     avg_attack: number
     avg_defence: number

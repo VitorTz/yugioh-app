@@ -56,24 +56,11 @@ const ImageCard = ({card, index}: ImageCardProps) => {
                 </Text>
             </Text>
         )
-    }
-    
+    }    
+
     return (        
         <Pressable onPress={() => handlePress()} style={{flex: 1,  alignItems: "center", marginTop: index >= CARD_GRID_COLUMNS ? 10 : 0}}>
-            <Image contentFit='cover'  style={styles.image} source={card.cropped_image_url}/>
-            <View style={{padding: 10, backgroundColor: Colors.gray, paddingVertical: 10, width: CARD_GRID_WIDTH, borderTopWidth: 2, borderColor: Colors.orange}} >
-                <CardInfo title='Name' info={card.name} />
-                <View style={{flexDirection: "row", columnGap: 20, flexWrap: "wrap", alignItems: "center", justifyContent: "flex-start"}} >
-                    <CardInfo title='Attack' info={card.attack} />
-                    <CardInfo title='Defence' info={card.defence} />
-                    <CardInfo title='Level' info={card.level} />
-                    <CardInfo title='Archetype' info={card.archetype} />
-                    <CardInfo title='Attribute' info={card.attribute} />
-                    <CardInfo title='Frametype' info={card.frametype} />
-                    <CardInfo title='Race' info={card.race} />
-                    <CardInfo title='Type' info={card.type} />                
-                </View>
-            </View>
+            <Image contentFit='cover'  style={styles.image} source={card.image_url}/>            
         </Pressable>
     )
 }

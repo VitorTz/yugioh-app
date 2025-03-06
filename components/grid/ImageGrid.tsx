@@ -11,11 +11,12 @@ import { Colors } from '@/constants/Colors'
 interface ImageGridProps {
     images: YuGiOhCard[]
     onEndReached: () => void
+    columns: number
     isLoading: boolean
     hasResult: boolean
 }
 
-const ImageGrid = ({images, onEndReached, isLoading, hasResult}: ImageGridProps) => {  
+const ImageGrid = ({images, onEndReached, columns, isLoading, hasResult}: ImageGridProps) => {  
 
   const Footer = () => {
     return (

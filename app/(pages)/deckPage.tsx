@@ -1,6 +1,6 @@
 import { FlatList, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {Image} from 'expo-image'
 import AppStyle from '@/constants/AppStyle'
 import { Colors } from '@/constants/Colors'
@@ -8,9 +8,12 @@ import { wp } from '@/helpers/util'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { AppConstants } from '@/constants/AppConstants'
+import { AppConstants, CARD_GRID_HEIGHT, CARD_GRID_WIDTH, DECK_GRID_HEIGHT, DECK_GRID_WIDTH } from '@/constants/AppConstants'
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
-import { YuGiOhDeck } from '@/helpers/types'
+import { YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
+import { supabase, supaFetchCardsFromDeck } from '@/lib/supabase'
+import ImageGrid from '@/components/grid/ImageGrid'
+
 
 const CardInfo = ({value, title}: {value: any, title: string}) => {
     return (
@@ -27,7 +30,24 @@ const CardInfo = ({value, title}: {value: any, title: string}) => {
 }
 
 const DeckPage = () => {
+
+    const [isLoading, setLoading] = useState(false);
+    const [cards, setCards] = useState<YuGiOhCard[]>([])
     const deck = useLocalSearchParams()
+
+    const fetch = async () => {        
+        setLoading(true)        
+        const data = await supaFetchCardsFromDeck(parseInt(deck.deck_id))
+        setCards(data)                
+        setLoading(false)
+    }
+
+    useEffect(
+        () => {            
+            fetch()
+        },
+        []
+    )
     
     const card_info = [
         {
@@ -49,16 +69,14 @@ const DeckPage = () => {
     ]
     
     return (
-        <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, padding: 20}} >
+        <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, padding: 10}} >
             <View style={styles.container} >
-                <Animated.View entering={FadeInUp.delay(50).duration(600)} >
-                    <Image style={styles.image} source={deck.image_url} />
-                </Animated.View>
+                <ImageGrid images={cards} columns={2} hasResult={true} isLoading={isLoading} onEndReached={() => {}} />
                 <Animated.View entering={FadeInDown.delay(50).duration(600)} style={styles.descrContainer}  >
                     <Text style={[styles.header, {color: Colors.red}]} >{deck.name}</Text>
                     <View style={{width: '100%', marginVertical: 10, flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
                         <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
-                        <MaterialCommunityIcons name="cards-outline" size={20} color={Colors.orange} />
+                        <MaterialCommunityIcons name="layers-triple-outline" size={20} color={Colors.orange} />
                         <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
                     </View>
                     <ScrollView>                        

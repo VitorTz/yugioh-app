@@ -21,7 +21,6 @@ import { Colors } from '@/constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import { AppConstants, DEFAULT_HORIZONTAL_PADDING } from "@/constants/AppConstants";
 import { wp, hp } from '@/helpers/util'
-import MultipleDropDownPicker from '@/components/drop-down-picker/MultipleDropDownPicker'
 import CardCustomPicker from '@/components/drop-down-picker/CardCustomPicker'
 import DeckCustomPicker from '@/components/drop-down-picker/DeckCustomPicker'
 import UniqueDropDownPicker from '@/components/drop-down-picker/UniqueDropDownPicker'

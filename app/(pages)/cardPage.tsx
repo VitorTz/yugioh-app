@@ -25,7 +25,7 @@ const CardInfo = ({value, title}: {value: any, title: string}) => {
     )
 }
 
-const cardPage = () => {
+const CardPage = () => {
     const card = useLocalSearchParams()
     
     const card_info = [
@@ -102,7 +102,7 @@ const cardPage = () => {
     )
 }
 
-export default cardPage
+export default CardPage
 
 const styles = StyleSheet.create({
     container: {

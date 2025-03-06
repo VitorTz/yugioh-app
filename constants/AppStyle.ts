@@ -11,7 +11,7 @@ const AppStyle = StyleSheet.create({
         backgroundColor: Colors.background, 
         paddingTop: 20,
         paddingBottom: 100,
-        paddingHorizontal: 20
+        paddingHorizontal: 10
     },
     safeAreaLarge: {
         flex: 1, 

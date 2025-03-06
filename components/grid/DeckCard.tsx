@@ -33,10 +33,10 @@ const DeckCard = ({deck, index}: ImageCardProps) => {
             </Text>            
         )
     }
-
+    
     return (        
         <Pressable onPress={() => handlePress()} style={{flex: 1,  alignItems: "center", marginTop: index >= DECK_GRID_COLUMNS ? 10 : 0}}>
-            <Image contentFit='cover'  style={styles.image} source={"https://res.cloudinary.com/dutf5vtcr/image/upload/v1741175439/yu-gi-oh/cropped/1/fuezn4qrnt9wxidqfjnw.jpg"}/>            
+            <Image contentFit='cover'  style={styles.image} source={deck.image_url}/>
             <View style={{padding: 10, backgroundColor: Colors.gray, paddingVertical: 20, width: DECK_GRID_WIDTH, borderTopWidth: 4, borderColor: Colors.orange}} >
                 <DeckInfo title={deck.name} />
                 <DeckInfo title={`${deck.type} Deck`} />

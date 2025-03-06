@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient, PostgrestError, Session } from '@supabase/supabase-js'
-import { CardOrderBy, GlobalContext, ImageDB, UserDB, YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
-import { CARD_SORT_OPTIONS, CARD_FETCH_LIMIT, DECK_FETCH_LIMIT } from '@/constants/AppConstants'
+import { GlobalContext, ImageDB, UserDB, YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
+import { CARD_FETCH_LIMIT, DECK_FETCH_LIMIT } from '@/constants/AppConstants'
 
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL : ""
@@ -17,13 +17,6 @@ const EQ_COMP = [
 ]
 
 
-const GEQ_COMP = [
-  "attack",
-  "defence",
-  "level"
-]
-
-
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     storage: typeof window !== 'undefined' ? AsyncStorage : undefined,
@@ -33,15 +26,17 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   },
 })
 
-export async function supaFetchUser(user_id: string): Promise<UserDB | null> {  
+export async function supaFetchUser(session: Session): Promise<UserDB | null> {  
     const {data, error} = await supabase.from(
       "users"
-    ).select(`
-      user_id,
-      name, 
-      image_id,      
-      images (image_url)`
-    ).eq("user_id", user_id).single()
+    ).select(
+      `
+        user_id,
+        name,
+        image_id,
+        images (image_url)
+      `
+    ).eq("user_id", session.user.id).single()
     if (error) { return null }    
     return {      
         user_id: data.user_id,
@@ -67,9 +62,10 @@ export async function supaFetchProfileIcons(): Promise<ImageDB[]> {
   )
 }
 
+
 export async function supaFechGlobalContext(session: Session): Promise<GlobalContext | null> {
   if (!session) { return null }
-  const user = await supaFetchUser(session.user.id)    
+  const user = await supaFetchUser(session)
   if (!user) { return null }
   const icons = await supaFetchProfileIcons()
   return {
@@ -77,6 +73,31 @@ export async function supaFechGlobalContext(session: Session): Promise<GlobalCon
     profileIcons: icons,
     session: session
   }
+}
+
+
+export async function supaFetchCardsFromDeck(deck_id: number): Promise<YuGiOhCard[]> {
+    const {data, error} = await supabase.from("deck_cards").select(
+      `
+      cards (
+        card_id,
+        name,
+        descr,
+        color,
+        attack,
+        defence,
+        level,
+        attribute,
+        archetype,
+        frametype,
+        race,
+        type,
+        image_url,
+        cropped_image_url
+      )
+      `
+    ).eq("deck_id", deck_id).overrideTypes<YuGiOhCard[]>()
+    return data ? data.map(item => item.cards) : []
 }
 
 
@@ -89,6 +110,7 @@ export async function supaFetchCards(
     card_id,
     name,
     descr,
+    color,
     attack,
     defence,
     level,
@@ -142,10 +164,7 @@ export const supaFetchDecks = async (
     name,
     type,
     image_url,    
-    num_cards,
-    avg_attack,
-    avg_defence,
-    avg_level,
+    num_cards,    
     archetypes,
     attributes,
     frametypes,
