@@ -2,20 +2,17 @@ import {
   TextInput, 
   Pressable, 
   SafeAreaView, 
-  StyleSheet, 
-  Animated, 
+  StyleSheet,   
   View, 
   KeyboardAvoidingView, 
-  Keyboard, 
-  ScrollView,
-  Text,
+  Keyboard,   
   Platform 
 } from 'react-native'
 import React, { useEffect, useState, useRef } from 'react'
 import { supaFetchCards, supaFetchDecks } from '@/lib/supabase'
 import { YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
 import { useCallback } from 'react'
-import { debounce, filter } from 'lodash'
+import { debounce } from 'lodash'
 import ImageGrid from '@/components/grid/ImageGrid'
 import { Colors } from '@/constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
@@ -164,8 +161,7 @@ const Database = () => {
       Keyboard.dismiss()
       searchText = null
       textRef.current?.clear()
-      setFilterType(s)
-      console.log("changind to", s)
+      setFilterType(s)      
       switch (s) {
         case "Deck":
           setDeckPickerDropDownIsExpanded(true)
@@ -229,7 +225,8 @@ const Database = () => {
           </View>
           
           <View style={{width: '100%', flex: 1, display: filterType == "Card" ?  "flex" : "none"}} >
-            <ImageGrid 
+            <ImageGrid
+              columns={2}
               isLoading={isLoading} 
               images={cards} 
               onEndReached={handleEndReached}
@@ -238,6 +235,7 @@ const Database = () => {
 
           <View style={{width: '100%', flex: 1, display: filterType == "Deck" ? "flex" : "none"}} >
             <DeckGrid
+              columns={1}
               isLoading={isLoading}
               decks={decks}
               onEndReached={handleEndReached}

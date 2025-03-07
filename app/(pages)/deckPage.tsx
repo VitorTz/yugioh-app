@@ -1,22 +1,19 @@
-import { ActivityIndicator, FlatList, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { useLocalSearchParams } from 'expo-router'
-import React, { useEffect, useState } from 'react'
-import {Image} from 'expo-image'
+import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useFocusEffect, useLocalSearchParams } from 'expo-router'
+import React, { useCallback, useEffect, useState } from 'react'
 import AppStyle from '@/constants/AppStyle'
+import { debounce } from 'lodash'
 import { Colors } from '@/constants/Colors'
-import { wp } from '@/helpers/util'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { AppConstants, CARD_GRID_HEIGHT, CARD_GRID_WIDTH, DECK_GRID_HEIGHT, DECK_GRID_WIDTH } from '@/constants/AppConstants'
-import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
-import { YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
-import { supaAddDeckToUser, supabase, supaFetchCardsFromDeck } from '@/lib/supabase'
+import { AppConstants } from '@/constants/AppConstants'
+import Animated, { FadeInDown } from 'react-native-reanimated'
+import { YuGiOhCard } from '@/helpers/types'
+import { supaAddDeckToUser, supaFetchCardsFromDeck, supaGetUseMissingCardInDeck, supaRmvDeckFromUser, supaUserHasDeck } from '@/lib/supabase'
 import Toast from 'react-native-toast-message'
-import { showToast } from '@/helpers/util'
-import ImageGrid from '@/components/grid/ImageGrid'
-import { useCallback } from 'react'
-import { debounce } from 'lodash'
+import { getImageHeight, hp, showToast, wp } from '@/helpers/util'
+import ImageCard from '@/components/grid/ImageCard'
+
 
 
 const DeckInfo = ({value, title}: {value: any, title: string}) => {
@@ -26,7 +23,7 @@ const DeckInfo = ({value, title}: {value: any, title: string}) => {
                 value &&                 
                 <View style={{marginRight: 10}} >
                     <Text style={styles.header} >{title}</Text>
-                    <Text style={styles.descr} >{value}</Text>
+                    <Text textBreakStrategy='simple' style={styles.descr} >{value}</Text>
                 </View>                
             }
         </>
@@ -36,20 +33,50 @@ const DeckInfo = ({value, title}: {value: any, title: string}) => {
 const DeckPage = () => {
 
     const [isLoading, setLoading] = useState(false);
-    const [isAddingDeckToCollection, setIsAddingDeckToCollection] = useState(false)
+    const [isLoadingMissingCards, setIsLoadingMissingCards] = useState(false)
+    const [userHasDeckInCollection, setUserHasDeckInCollection] = useState(false)
     const [cards, setCards] = useState<YuGiOhCard[]>([])
+    const [missingCards, setMissingCards] = useState<{card_id: string, name: string}[]>([])
     const deck = useLocalSearchParams()
+    const deck_id = parseInt(deck.deck_id)
+    const cardWidth = wp(28)
+    const cardHeight = getImageHeight(cardWidth)
 
-    const fetch = async () => {        
-        setLoading(true)        
-        const data = await supaFetchCardsFromDeck(parseInt(deck.deck_id))
+    const initPage = async () => {
+        setLoading(true)
+        
+        const data = await supaFetchCardsFromDeck(deck_id)
         setCards(data)
-        setLoading(false)
+
+        const {result, error} = await supaUserHasDeck(deck_id)
+        setUserHasDeckInCollection(result)
+
+        setLoading(false)        
     }
 
     useEffect(
-        () => {fetch()},
+        () => {initPage()},
         []
+    )
+    
+    const checkForMissingCards = async () => {
+        const {cards: missCards, error: err} = await supaGetUseMissingCardInDeck(deck_id)
+        setMissingCards(missCards)
+    }
+
+    const debounceCheckForMissingCards = useCallback(
+          debounce(checkForMissingCards, 400),
+          []
+      )
+
+    useFocusEffect(
+        useCallback(
+            () => {
+                console.log("debo")
+                debounceCheckForMissingCards()
+            },
+            []
+        )
     )
     
 
@@ -61,13 +88,13 @@ const DeckPage = () => {
         {title: "Types", value: deck.types},
         {title: "Deck Type", value: deck.type},
         {title: "Cards", value: `Total: ${deck.num_cards}`},
-    ]        
+    ]
 
-    const handleAddDeckToCollection = async () => {
-        setIsAddingDeckToCollection(true)        
-        const {success, error} = await supaAddDeckToUser(parseInt(deck.deck_id))
+    const handleAddDeckToCollection = async () => {        
+        const {success, error} = await supaAddDeckToUser(deck_id)        
         if (success) {
             showToast("Success", `Deck ${deck.name} add to your collection`, "success")            
+            setUserHasDeckInCollection(true)
         } else {
             switch (error?.code) {
                 case "23505":
@@ -75,39 +102,83 @@ const DeckPage = () => {
                 default:
                     break
             }            
+        }        
+    }
+
+    const handleRemoveDeckFromCollection = async () => {        
+        const {success, error} = await supaRmvDeckFromUser(deck_id)
+        if (success) {
+            showToast("Success!", "deck removed from your collection!", "success")
+            setUserHasDeckInCollection(false)
+        } else {
+            showToast("Error", error!.message, "error")
+        }        
+    }
+
+    const handleAddRmvDeck = async () => {
+        setLoading(true)
+        if (userHasDeckInCollection) {
+            await handleRemoveDeckFromCollection()
+        } else {
+            await handleAddDeckToCollection()
         }
-        setIsAddingDeckToCollection(false)
-    }     
-    
-    
+        setLoading(false)
+    } 
+
     return (
-        <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, padding: 10}} >
-            <View style={styles.container} >
-                <Animated.View entering={FadeInDown.delay(50).duration(600)} style={styles.descrContainer}  >
+        <SafeAreaView style={styles.safeArea} >
+            <ScrollView>
+                <View style={styles.returnButton} >
+                    <Pressable onPress={() => router.back()} style={AppStyle.iconButton}  hitSlop={AppConstants.hitSlopLarge} >
+                        <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
+                    </Pressable>
+                </View>
+                <View style={styles.container} >
+                    <Animated.View entering={FadeInDown.delay(50).duration(600)} style={styles.descrContainer}  >
                     <Text style={[styles.header, {color: Colors.red}]} >{deck.name}</Text>
                     <View style={{width: '100%', marginVertical: 10, flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
                         <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
-                        <MaterialCommunityIcons name="layers-triple-outline" size={20} color={Colors.orange} />
+                        <Ionicons name="layers-outline" size={20} color={Colors.orange} />
                         <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
                     </View>
-                    <ScrollView>                        
                         {card_info.map((item) => (<DeckInfo key={item.title} value={item.value} title={item.title}/>))}
-                        {cards.map((item, index) => <View key={index} ><Text style={[AppStyle.textRegular, {color: Colors.white}]} >{item.name}</Text></View>)}
-                    </ScrollView>
+                        <Text style={AppStyle.textHeader}>Cards you don't have</Text>
+                        <ScrollView style={{maxHeight: hp(30)}} nestedScrollEnabled={true} >                            
+                            {
+                                missingCards.map(
+                                    (item, index) => <View key={index}><Text style={AppStyle.textRegular}>{item.name}</Text></View>
+                                )
+                            }
+                        </ScrollView>
+                    <Pressable onPress={handleAddRmvDeck} style={{paddingHorizontal: 20, height: 50, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center", borderRadius: 4, marginTop: 10}} >
+                        {
+                            isLoading ?
+                            <ActivityIndicator size={AppConstants.icon.size} color={Colors.white} /> :
+                            <Text style={AppStyle.textRegular} >
+                                    {userHasDeckInCollection ? "Remove deck from collection" : "Add deck to collection"}
+                            </Text>
+                        }
+                    </Pressable>
                 </Animated.View>
-                <ImageGrid images={cards} columns={2} hasResult={true} isLoading={isLoading} onEndReached={() => {}} />
-            </View>
-            <Pressable onPress={handleAddDeckToCollection} style={[AppStyle.iconButton, {position: 'absolute', left: 20, top: 10}]}  hitSlop={AppConstants.hitSlopLarge} >
-                {
-                    isAddingDeckToCollection ?
-                    <ActivityIndicator size={AppConstants.icon.size} color={AppConstants.icon.color}/> :
-                    <Ionicons name='add-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
-                }
-            </Pressable>
-            <Pressable onPress={() => router.back()} style={[AppStyle.iconButton, {position: 'absolute', right: 20, top: 10}]}  hitSlop={AppConstants.hitSlopLarge} >
-                <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
-            </Pressable>
-        <Toast/>
+                <View style={styles.deckCardsContainer} >
+                    {
+                        cards.map(
+                            (value, index) => 
+                            <View key={index} >
+                                <ImageCard 
+                                    card={value} 
+                                    gridColumns={0} 
+                                    width={cardWidth} 
+                                    height={cardHeight} 
+                                    index={index}
+                                />
+                            </View>
+                        )
+                    }
+                </View>
+                </View>
+            </ScrollView>
+            <Toast/>
         </SafeAreaView>
     )
 }
@@ -115,12 +186,23 @@ const DeckPage = () => {
 export default DeckPage
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1, 
+        backgroundColor: Colors.background, 
+        padding: wp(4)
+    },
     container: {
         flex: 1,        
         width: '100%',
-        gap: 20,
-        marginTop: 35,
+        rowGap: 10,        
+        marginTop: 10,        
         alignItems: "center"        
+    },
+    returnButton: {
+        width: '100%', 
+        alignItems: "center", 
+        justifyContent: "flex-end", 
+        flexDirection: "row"
     },
     image: {                 
         width: 320,
@@ -144,5 +226,12 @@ const styles = StyleSheet.create({
         color: Colors.white,
         fontFamily: "LeagueSpartan_400Regular",
         fontSize: 16
+    },
+    deckCardsContainer: {
+        width: '100%', 
+        gap: wp(2), 
+        flexDirection: "row", 
+        flexWrap: 'wrap', 
+        justifyContent: "center"
     }
 })

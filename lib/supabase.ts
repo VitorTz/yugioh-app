@@ -87,17 +87,63 @@ export async function supaAddDeckToUser(deck_id: number): Promise<{success: bool
   return {success: error ? false : true, error: error}  
 }
 
+export async function supaRmvDeckFromUser(deck_id: number): Promise<{success: boolean, error: AuthError | null}> {
+  const {data: {session}, error: err} = await supabase.auth.getSession()
+  if (err) {    
+    return {success: false, error: err}
+  }  
+  
+  const response = await supabase.from("user_decks").delete().eq("deck_id", deck_id).eq("user_id", session!.user.id)
+  return {success: response.status == 204, error: null}
+}
+
+export async function supaGetUseMissingCardInDeck(deck_id: number): Promise<{cards: {card_id: string, name: string}[], error: AuthError | PostgrestError | null}> {
+  const {data: {session}, error: err} = await supabase.auth.getSession()
+  if (err) {    
+    return {cards: [], error: err}
+  }
+  const { data, error } = await supabase.rpc('get_user_missing_cards', {
+    p_deck_id: deck_id,
+    p_user_id: session!.user.id
+  })
+
+  data.sort((a: {card_id: string, name: string}, b: {card_id: string, name: string}) => {
+      if (a.name < b.name) {
+        return -1
+      } else if (a.name == b.name) {
+        return 0
+      }
+      return 1
+  })
+  return {cards: data, error: error}
+}
+
 export async function supaAddCardToCollection(card_id: number, total: number) {
   const {data: {session}, error: err} = await supabase.auth.getSession()
   if (err) {
     console.log(err.message)
     return {success: false, error: err}
   } 
-  // sum if already exists or insert if not
+  // TODO: sum if already exists or insert if not
   const {data, error} = await supabase.from("user_cards").insert(
     [{"user_id": session!.user.id, "card_id": card_id, "total": total}]
   ).select()
   return {success: error ? false : true, error: error}  
+}
+
+
+export async function supaUserHasDeck(deck_id: number): Promise<{result: boolean, error: AuthError | PostgrestError | null}> {
+  const {data: {session}, error: err} = await supabase.auth.getSession()
+  if (err) {
+    console.log(err.message)
+    return {result: false, error: err}
+  }
+
+  const {data, error} = await supabase.from("user_decks").select("deck_id").eq("deck_id", deck_id).eq("user_id", session!.user.id).single()
+  if (error && error.code == "PGRST116") {
+    return {result: false, error: error}
+  }  
+  return {result: true, error: error}
 }
 
 
@@ -210,9 +256,7 @@ export const supaFetchDecks = async (
     frametypes,
     races,
     types
-  `)
-    
-  console.log(searchTxt, options)  
+  `)  
 
   if (searchTxt) {
     query = query.ilike("name", `%${searchTxt}%`)
@@ -244,8 +288,7 @@ export const supaFetchDecks = async (
 
   if (options.has('races')) {
       options.get('races').forEach(
-      (value: string) => {
-        console.log("races", value)
+      (value: string) => {        
         query = query.contains('races', [value])
       }
     )

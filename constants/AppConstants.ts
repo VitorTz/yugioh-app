@@ -1,6 +1,5 @@
 import { CardOrderBy, Order } from "@/helpers/types";
 import { Colors } from "./Colors";
-import { wp, hp } from "@/helpers/util";
 import { Platform } from "react-native";
 
 export const API_CARD_WIDTH = 813
@@ -11,19 +10,6 @@ export const API_CARD_CROPPED_HEIGHT = 622
 export const DEFAULT_HORIZONTAL_PADDING = 10
 export const CARD_FETCH_LIMIT = Platform.OS == "web" ? 120 : 60
 export const DECK_FETCH_LIMIT = Platform.OS == "web" ? 120 : 60
-
-export const WIDTH = wp(100)
-export const HEIGHT = hp(100)
-
-export const CARD_GRID_COLUMNS = WIDTH < 500 ? 2 : WIDTH < 900 ? 4 : 10
-export const CARD_GRID_GAP = 16
-export const CARD_GRID_WIDTH = (wp(100) - DEFAULT_HORIZONTAL_PADDING - (CARD_GRID_COLUMNS * CARD_GRID_GAP)) / CARD_GRID_COLUMNS
-export const CARD_GRID_HEIGHT = CARD_GRID_WIDTH * (API_CARD_HEIGHT / API_CARD_WIDTH)
-
-export const DECK_GRID_COLUMNS = Platform.OS == "web" ? 3 : 1
-export const DECK_GRID_GAP = 16
-export const DECK_GRID_WIDTH = (wp(100) - DEFAULT_HORIZONTAL_PADDING - (DECK_GRID_COLUMNS * DECK_GRID_GAP)) / DECK_GRID_COLUMNS
-export const DECK_GRID_HEIGHT = DECK_GRID_WIDTH * (API_CARD_CROPPED_HEIGHT / API_CARD_CROPPED_WIDTH)
 
 
 export const AppConstants = {

@@ -61,8 +61,13 @@ const CardPage = () => {
     }
     
     return (
-        <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, padding: 20}} >
+        <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, paddingVertical: 10, paddingHorizontal: 20}} >
             <ScrollView >
+                <View style={{width: '100%', alignItems: "flex-end"}} >
+                    <Pressable onPress={() => router.back()} style={AppStyle.iconButton}  hitSlop={AppConstants.hitSlopLarge} >
+                        <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
+                    </Pressable>
+                </View>
                 <View style={styles.container} >
                     <Animated.View entering={FadeInUp.delay(50).duration(600)} >
                         <Image style={styles.image} source={card.image_url} />
@@ -105,13 +110,9 @@ const CardPage = () => {
                                     }
                             </Pressable>
                         </View>
-                    
                     </Animated.View>
                 </View>
-            </ScrollView>            
-            <Pressable onPress={() => router.back()} style={[AppStyle.iconButton, {position: 'absolute', right: 20, top: 10}]}  hitSlop={AppConstants.hitSlopLarge} >
-                <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
-            </Pressable>
+            </ScrollView>
             <Toast/>
         </SafeAreaView>
     )

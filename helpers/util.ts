@@ -1,6 +1,7 @@
 import Toast from "react-native-toast-message";
 import { ToastType } from "react-native-toast-message";
 import { Platform } from "react-native";
+import { API_CARD_WIDTH, API_CARD_HEIGHT } from "@/constants/AppConstants";
 
 import { Dimensions } from "react-native";
 
@@ -39,15 +40,6 @@ export function toTitleCase(str: string): string {
     );
 }
 
-
-export const getImageHeight = (height: number, width: number) => {
-    let h = Platform.OS === "web" ? 200 : 0
-    if (width > height) {
-        h += 300
-    } else if (width < height) {
-        h += 450
-    } else {
-        h += 250
-    }
-    return h
+export function getImageHeight(width: number): number {
+    return width * (API_CARD_HEIGHT / API_CARD_WIDTH)
 }

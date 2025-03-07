@@ -1,12 +1,5 @@
-import { 
-    CARD_GRID_COLUMNS, 
-    CARD_GRID_HEIGHT, 
-    CARD_GRID_WIDTH 
-} from '@/constants/AppConstants'
-import { StyleSheet, Pressable, Text, View } from 'react-native'
-import AppStyle from '@/constants/AppStyle'
+import { StyleSheet, Pressable } from 'react-native'
 import { YuGiOhCard } from '@/helpers/types'
-import { Colors } from '@/constants/Colors'
 import { Keyboard } from 'react-native'
 import { router } from 'expo-router'
 import { Image } from 'expo-image'
@@ -16,10 +9,13 @@ import React from 'react'
 interface ImageCardProps {
     card: YuGiOhCard
     index: number
+    gridColumns: number
+    width: number
+    height: number
 }
 
 
-const ImageCard = ({card, index}: ImageCardProps) => {    
+const ImageCard = ({card, index, gridColumns, width, height}: ImageCardProps) => {    
     
     const handlePress = () => {
         Keyboard.dismiss()
@@ -42,34 +38,16 @@ const ImageCard = ({card, index}: ImageCardProps) => {
                 }
             }
         )
-    }
-
-    const CardInfo = ({title, info}: {title: string, info: string | number | null | undefined}) => {
-        if (!info) {
-            return <></>
-        }
-        return (
-            <Text style={[AppStyle.textRegular, {color: Colors.orange}]} >
-                {title}:{' '}
-                <Text style={[AppStyle.textRegular, {color: Colors.white}]} >
-                    {info}
-                </Text>
-            </Text>
-        )
     }    
-
+    
     return (        
-        <Pressable onPress={() => handlePress()} style={{flex: 1,  alignItems: "center", marginTop: index >= CARD_GRID_COLUMNS ? 10 : 0}}>
-            <Image contentFit='cover'  style={styles.image} source={card.image_url}/>            
+        <Pressable onPress={() => handlePress()} style={{flex: 1,  alignItems: "center", width: width, height: height, marginTop: gridColumns != 0 ? (index >= gridColumns ? 10 : 0)  : 0}}>
+            <Image contentFit='cover'  style={{width: width, height: height}} source={card.image_url}/>            
         </Pressable>
     )
 }
 
 export default ImageCard
 
-const styles = StyleSheet.create({    
-    image: {
-        width: CARD_GRID_WIDTH,
-        height: CARD_GRID_HEIGHT
-    }   
-})
+
+const styles = StyleSheet.create({})

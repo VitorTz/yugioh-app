@@ -1,12 +1,15 @@
 import { ActivityIndicator, NativeScrollEvent, StyleSheet, View, Text } from 'react-native'
 import { MasonryFlashList } from '@shopify/flash-list'
-import { AppConstants, CARD_GRID_COLUMNS } from '@/constants/AppConstants'
+import { AppConstants, DEFAULT_HORIZONTAL_PADDING, API_CARD_WIDTH, API_CARD_HEIGHT } from '@/constants/AppConstants'
+import { wp } from '@/helpers/util'
 import ImageCard from './ImageCard'
 import {Image} from 'expo-image'
 import React, { useEffect, useRef, useState } from 'react'
 import { YuGiOhCard } from '@/helpers/types'
 import { Colors } from '@/constants/Colors'
 
+
+const GRID_GAP = 16
 
 interface ImageGridProps {
     images: YuGiOhCard[]
@@ -29,6 +32,9 @@ const ImageGrid = ({images, onEndReached, columns, isLoading, hasResult}: ImageG
       </>
     )
   }
+  
+  const cardWidth = (wp(100) - DEFAULT_HORIZONTAL_PADDING - (columns * GRID_GAP)) / columns
+  const cardHeight = cardWidth * (API_CARD_HEIGHT / API_CARD_WIDTH)
 
   return (        
     <View style={styles.container}>
@@ -43,7 +49,13 @@ const ImageGrid = ({images, onEndReached, columns, isLoading, hasResult}: ImageG
           renderItem={
               ({item, index}) => {
                 return (
-                  <ImageCard key={index} index={index} card={item}/>
+                  <ImageCard 
+                    gridColumns={columns} 
+                    key={index} 
+                    index={index} 
+                    card={item} 
+                    width={cardWidth} 
+                    height={cardHeight}/>
                 )
             }
           }

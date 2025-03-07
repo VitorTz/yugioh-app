@@ -1,20 +1,24 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
-import { MasonryFlashList, FlashList } from '@shopify/flash-list'
-import { DECK_GRID_COLUMNS } from '@/constants/AppConstants'
+import { MasonryFlashList } from '@shopify/flash-list'
 import React from 'react'
+import { wp } from '@/helpers/util'
+import { DEFAULT_HORIZONTAL_PADDING, API_CARD_CROPPED_WIDTH, API_CARD_CROPPED_HEIGHT } from '@/constants/AppConstants'
 import { YuGiOhDeck } from '@/helpers/types'
 import { Colors } from '@/constants/Colors'
 import DeckCard from './DeckCard'
 
 
-interface ImageGridProps {
+const GRID_GAP = 16
+
+interface DeckGridProps {
     decks: YuGiOhDeck[]
     onEndReached: () => void
+    columns: number
     isLoading: boolean
     hasResult: boolean
 }
 
-const DeckGrid = ({decks, onEndReached, isLoading, hasResult}: ImageGridProps) => {  
+const DeckGrid = ({decks, onEndReached, columns, isLoading, hasResult}: DeckGridProps) => {  
 
   const Footer = () => {
     return (
@@ -28,12 +32,15 @@ const DeckGrid = ({decks, onEndReached, isLoading, hasResult}: ImageGridProps) =
     )
   }
 
+  const deckWidth = (wp(100) - DEFAULT_HORIZONTAL_PADDING - (columns * GRID_GAP)) / columns
+  const deckHeight = deckWidth * (API_CARD_CROPPED_HEIGHT / API_CARD_CROPPED_WIDTH)
+
   return (        
     <View style={styles.container}>
         <MasonryFlashList          
           data={decks}          
           keyboardShouldPersistTaps={"handled"}
-          numColumns={DECK_GRID_COLUMNS}
+          numColumns={columns}
           estimatedItemSize={80}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
@@ -41,7 +48,7 @@ const DeckGrid = ({decks, onEndReached, isLoading, hasResult}: ImageGridProps) =
           renderItem={
               ({item, index}) => {
                 return (
-                  <DeckCard key={index} index={index} deck={item}/>
+                  <DeckCard columns={columns} width={deckWidth} height={deckHeight} key={index} index={index} deck={item}/>
                 )
             }
           }
