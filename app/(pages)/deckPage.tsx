@@ -44,13 +44,11 @@ const DeckPage = () => {
 
     const initPage = async () => {
         setLoading(true)
-        
-        const data = await supaFetchCardsFromDeck(deck_id)
-        setCards(data)
+            const data = await supaFetchCardsFromDeck(deck_id)
+            setCards(data)
 
-        const {result, error} = await supaUserHasDeck(deck_id)
-        setUserHasDeckInCollection(result)
-
+            const {result, error} = await supaUserHasDeck(deck_id)
+            setUserHasDeckInCollection(result)
         setLoading(false)        
     }
 
@@ -65,14 +63,13 @@ const DeckPage = () => {
     }
 
     const debounceCheckForMissingCards = useCallback(
-          debounce(checkForMissingCards, 400),
+          debounce(checkForMissingCards, 500),
           []
       )
 
     useFocusEffect(
         useCallback(
-            () => {
-                console.log("debo")
+            () => {                
                 debounceCheckForMissingCards()
             },
             []

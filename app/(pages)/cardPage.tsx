@@ -1,6 +1,7 @@
 import { FlatList, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { useLocalSearchParams } from 'expo-router'
-import React, { useState } from 'react'
+import { useFocusEffect, useLocalSearchParams } from 'expo-router'
+import { debounce } from 'lodash'
+import React, { useCallback, useState } from 'react'
 import {Image} from 'expo-image'
 import AppStyle from '@/constants/AppStyle'
 import { Colors } from '@/constants/Colors'
@@ -13,7 +14,8 @@ import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
 import Toast from 'react-native-toast-message'
 import { ActivityIndicator } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
-import { supaAddCardToCollection } from '@/lib/supabase'
+import { supaAddCardToCollection, supabase, supaRmvCardFromCollection } from '@/lib/supabase'
+
 
 const CardInfo = ({value, title}: {value: any, title: string}) => {
     return (
@@ -29,10 +31,32 @@ const CardInfo = ({value, title}: {value: any, title: string}) => {
     )
 }
 
+
+const OrderPizza = () => {
+    const initialValues = [{ id: "pizza", value: 3 }];
+    const [pizzas, setPizzas] = useState(initialValues);
+    const pizzaNumbers = [{ id: "pizza", label: "🍕", min: 0, max: 99 }];
+   
+    return (
+      <View>
+        <Text>I would like</Text>
+        <NumberPlease
+          digits={pizzaNumbers}
+          values={pizzas}
+          onChange={(values) => setPizzas(values)}
+        />
+      </View>
+    );
+  };
+
 const CardPage = () => {
+
     const card = useLocalSearchParams()
     const [isAddingDeckToCollection, setIsAddingDeckToCollection] = useState(false)
-    const [text, setText] = useState('')
+    const [totalInUserCollection, setTotalInUserCollection] = useState(0)
+    const [addCardsNum, setAddCardsNum] = useState('')
+    const [rmvCardsNum, setRmvCardsNum] = useState('')
+    const card_id = card.card_id
     
     const card_info = [
         {value: card.attack, title: 'Attack'},
@@ -45,20 +69,68 @@ const CardPage = () => {
         {value: card.type, title: 'Type'}
     ]
 
-    const handleAddDeckToCollection = async () => {
-        if (text == '') {
+    const updateTotalInUserCollection = async () => {
+        const {data, error} = await supabase.from("user_cards").select("total").eq("card_id", card_id).single()
+        data ? setTotalInUserCollection(data!.total) : setTotalInUserCollection(0)        
+    }
+
+    const handleAddCardToCollection = async () => {
+        if (addCardsNum == '') {
             showToast("You are trying to add 0 cards to your collection", "", "error")
             return
         }
         setIsAddingDeckToCollection(true)
-        const {success, error} = await supaAddCardToCollection(card.card_id, parseInt(text))
+        const {success, error} = await supaAddCardToCollection(card_id, parseInt(addCardsNum))
         if (success) {
-            showToast("Successs", `Card ${card.name} x ${text} is add to your collecction`, "success")
-        } else (
-            showToast("Error", error!.message, "error")
-        )
+            showToast("Successs", '', "success")
+        } else if (error) {
+            console.log(error)
+            switch (error.code) {                
+                case "23503":
+                    showToast("Error", "server error", "error")
+                    break
+                default:
+                    showToast("Error", "", "error")
+                    break
+            }
+        }
+        await updateTotalInUserCollection()
         setIsAddingDeckToCollection(false)
     }
+
+    const debounceHandleAddCardToCollection = useCallback(
+        debounce(handleAddCardToCollection, 400),
+        [addCardsNum]
+    )
+
+    const handleRmvCardFromCollection = async () => {
+        if (rmvCardsNum == '') {
+            showToast("You are trying to rmv 0 cards to your collection", "", "error")
+            return
+        }
+        setIsAddingDeckToCollection(true)
+        const {success, error} = await supaRmvCardFromCollection(card_id, parseInt(rmvCardsNum))
+        if (success) {
+            showToast("Successs", '', "success")
+        } else if (error) {
+            console.log(error)
+            switch (error.code) {                
+                case "23503":
+                    showToast("Error", "server error", "error")
+                    break
+                default:
+                    showToast("Error", "", "error")
+                    break
+            }
+        }
+        await updateTotalInUserCollection()
+        setIsAddingDeckToCollection(false)
+    }
+
+    const debounceHandleRmvCardFromCollection = useCallback(
+        debounce(handleRmvCardFromCollection, 400),
+        [rmvCardsNum]
+    )
     
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, paddingVertical: 10, paddingHorizontal: 20}} >
@@ -88,28 +160,52 @@ const CardPage = () => {
                         />
                         <Text style={styles.header} >Description</Text>
                         <Text style={styles.descr} >{card.descr}</Text>
-
-                        <View style={{width: '100%', marginTop: 20, flexDirection: "row", gap: 20}} >
+                        <Text style={styles.header} >Cards in collection</Text>
+                        <Text style={AppStyle.textRegular}>{totalInUserCollection}</Text>
+                        <View style={{width: '100%', marginTop: 20, flexDirection: "row", gap: 10}} >
                             <TextInput 
                                 keyboardType='numeric' 
-                                value={text}
+                                value={addCardsNum}
                                 placeholder='0' 
                                 placeholderTextColor={Colors.white} 
-                                onChangeText={text => setText(text)}
+                                onChangeText={text => setAddCardsNum(text)}
                                 maxLength={3}
-                                style={{color: Colors.white, width: 100, padding: 20, backgroundColor: Colors.background, borderRadius: 4}} 
+                                style={{color: Colors.white, width: 80, padding: 20, backgroundColor: Colors.background, borderRadius: 4}} 
                             />
                             <Pressable 
-                                onPress={handleAddDeckToCollection} 
+                                onPress={debounceHandleAddCardToCollection} 
                                 hitSlop={AppConstants.hitSlop} 
-                                style={{paddingHorizontal: 20, width: 160, borderRadius: 4, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}}>
+                                style={{paddingHorizontal: 20, flex: 1, borderRadius: 4, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}}>
                                     {
                                      isAddingDeckToCollection ?
                                         <ActivityIndicator size={AppConstants.icon.size} color={Colors.white}/> :
-                                        <Text style={AppStyle.textRegular} >add to collection</Text>
+                                        <Text style={AppStyle.textRegular} >add {addCardsNum} {addCardsNum > '1' ? "cards" : "card"} to collection</Text>
                                     }
                             </Pressable>
                         </View>
+                        
+                        <View style={{width: '100%', marginTop: 20, flexDirection: "row", gap: 10}} >
+                            <TextInput 
+                                keyboardType='numeric' 
+                                value={rmvCardsNum}
+                                placeholder='0' 
+                                placeholderTextColor={Colors.white} 
+                                onChangeText={text => setRmvCardsNum(text)}
+                                maxLength={3}
+                                style={{color: Colors.white, width: 80, padding: 20, backgroundColor: Colors.background, borderRadius: 4}} 
+                            />
+                            <Pressable 
+                                onPress={debounceHandleRmvCardFromCollection} 
+                                hitSlop={AppConstants.hitSlop} 
+                                style={{paddingHorizontal: 20, flex: 1, borderRadius: 4, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}}>
+                                    {
+                                     isAddingDeckToCollection ?
+                                        <ActivityIndicator size={AppConstants.icon.size} color={Colors.white}/> :
+                                        <Text style={AppStyle.textRegular} >rmv {rmvCardsNum} {rmvCardsNum > '1' ? "cards" : "card"} from collection</Text>
+                                    }
+                            </Pressable>
+                        </View>
+
                     </Animated.View>
                 </View>
             </ScrollView>

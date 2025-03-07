@@ -42,7 +42,7 @@ const ImageCard = ({card, index, gridColumns, width, height}: ImageCardProps) =>
     
     return (        
         <Pressable onPress={() => handlePress()} style={{flex: 1,  alignItems: "center", width: width, height: height, marginTop: gridColumns != 0 ? (index >= gridColumns ? 10 : 0)  : 0}}>
-            <Image contentFit='cover'  style={{width: width, height: height}} source={card.image_url}/>            
+            <Image contentFit='cover' style={{width: width, height: height}} source={card.image_url}/>            
         </Pressable>
     )
 }

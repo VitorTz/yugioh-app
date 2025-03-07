@@ -123,11 +123,26 @@ export async function supaAddCardToCollection(card_id: number, total: number) {
   if (err) {
     console.log(err.message)
     return {success: false, error: err}
-  } 
-  // TODO: sum if already exists or insert if not
-  const {data, error} = await supabase.from("user_cards").insert(
-    [{"user_id": session!.user.id, "card_id": card_id, "total": total}]
-  ).select()
+  }
+  const { error } = await supabase.rpc('insert_user_card', {
+    p_card_id: card_id,
+    p_user_id: session!.user.id,
+    p_quantity: total
+  })  
+  return {success: error ? false : true, error: error}  
+}
+
+export async function supaRmvCardFromCollection(card_id: number, total: number) {
+  const {data: {session}, error: err} = await supabase.auth.getSession()
+  if (err) {
+    console.log(err.message)
+    return {success: false, error: err}
+  }
+  const { error } = await supabase.rpc('remove_user_card', {
+    p_card_id: card_id,
+    p_user_id: session!.user.id,
+    p_quantity: total
+  })
   return {success: error ? false : true, error: error}  
 }
 

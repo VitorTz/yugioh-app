@@ -67,10 +67,11 @@ const Database = () => {
 
   
   const fetchCards = async (append: boolean = false) => {
+    console.log("fetching")
     setLoading(true)      
       const {data, error} = await supaFetchCards(searchText, cardOptions, cardPage)      
       setCardHasResults(data.length > 0)
-      if (data) {      
+      if (data) {
         append ? setCards([...cards, ...data]) : setCards([...data])
       }    
     setLoading(false)
@@ -98,6 +99,7 @@ const Database = () => {
   )
 
   const handleSearch = async (text: string | null, append: boolean = false) => {        
+    console.log("2312")
     searchText = text ? text.trimEnd() : null
     switch (filterType) {
       case "Card":
@@ -226,7 +228,7 @@ const Database = () => {
           
           <View style={{width: '100%', flex: 1, display: filterType == "Card" ?  "flex" : "none"}} >
             <ImageGrid
-              columns={2}
+              columns={3}
               isLoading={isLoading} 
               images={cards} 
               onEndReached={handleEndReached}

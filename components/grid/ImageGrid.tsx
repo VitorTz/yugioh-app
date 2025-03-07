@@ -1,5 +1,5 @@
 import { ActivityIndicator, NativeScrollEvent, StyleSheet, View, Text } from 'react-native'
-import { MasonryFlashList } from '@shopify/flash-list'
+import { FlashList, MasonryFlashList } from '@shopify/flash-list'
 import { AppConstants, DEFAULT_HORIZONTAL_PADDING, API_CARD_WIDTH, API_CARD_HEIGHT } from '@/constants/AppConstants'
 import { wp } from '@/helpers/util'
 import ImageCard from './ImageCard'
@@ -9,7 +9,7 @@ import { YuGiOhCard } from '@/helpers/types'
 import { Colors } from '@/constants/Colors'
 
 
-const GRID_GAP = 16
+const GRID_GAP = 10
 
 interface ImageGridProps {
     images: YuGiOhCard[]
@@ -38,11 +38,11 @@ const ImageGrid = ({images, onEndReached, columns, isLoading, hasResult}: ImageG
 
   return (        
     <View style={styles.container}>
-        <MasonryFlashList          
+        <FlashList
           data={images}
           keyboardShouldPersistTaps={"handled"}
           numColumns={columns}
-          estimatedItemSize={80}
+          estimatedItemSize={cardHeight}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
           ListFooterComponent={<Footer/>}          
