@@ -31,35 +31,32 @@ const Profile = () => {
   const [user, setUser] = useState<UserDB | null>(null)  
   const username = user ? user.name : ""
 
-  const initPage = async () => {
-    const {data: {session}, error} = await supabase.auth.getSession()
-    if (!session) {
+  const handleFocus = async () => {    
+    if (user == null) {
       setWaitingForSession(true)
-      setSession(null)
+    }
+
+    const {data: {session}, error} = await supabase.auth.getSession()
+    setSession(session)
+    if (session) {
+      const usr = await supaFetchUser(session)
+      setUser(usr)
+    } else {
       setUser(null)
       await sleep(500)
       router.replace("/(auth)/signin")
-    } else {
-      const user = await supaFetchUser(session)
-      setSession(session)
-      setUser(user)      
-      setWaitingForSession(false)
     }
+
+    setWaitingForSession(false)
   }
-  
-  useEffect(
-    () => {      
-      initPage()
-      console.log("oi")
-    },
-    []
-  )
 
   useFocusEffect(
-    () => {
-      const r = useLocalSearchParams()
-      console.log(r)
-    }
+    useCallback(
+      () => {
+        handleFocus()
+      },
+      []
+    )
   )
 
   const handleLogout = async () => {
@@ -67,9 +64,7 @@ const Profile = () => {
     if (error) {
       showToast("Error", error.message, "error")
       return
-    }
-    setSession(null)
-    setUser(null)
+    }    
     showToast("Success!", "Goodbye", "success")
     await sleep(1500)
     router.replace("/(auth)/signin")

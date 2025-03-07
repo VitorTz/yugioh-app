@@ -1,20 +1,28 @@
-import { FlatList, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { useFocusEffect, useLocalSearchParams } from 'expo-router'
-import { debounce } from 'lodash'
-import React, { useCallback, useState } from 'react'
-import {Image} from 'expo-image'
+import { 
+    FlatList, 
+    Pressable, 
+    SafeAreaView, 
+    ScrollView, 
+    StyleSheet, 
+    Text, 
+    View 
+} from 'react-native'
+import { supaAddCardToCollection, supabase, supaRmvCardFromCollection } from '@/lib/supabase'
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated'
+import { TextInput } from 'react-native-gesture-handler'
+import { AppConstants } from '@/constants/AppConstants'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useLocalSearchParams } from 'expo-router'
+import { ActivityIndicator } from 'react-native'
+import { showToast, wp } from '@/helpers/util'
+import Toast from 'react-native-toast-message'
+import { Ionicons } from '@expo/vector-icons'
 import AppStyle from '@/constants/AppStyle'
 import { Colors } from '@/constants/Colors'
-import { showToast, wp } from '@/helpers/util'
 import { router } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { AppConstants } from '@/constants/AppConstants'
-import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
-import Toast from 'react-native-toast-message'
-import { ActivityIndicator } from 'react-native'
-import { TextInput } from 'react-native-gesture-handler'
-import { supaAddCardToCollection, supabase, supaRmvCardFromCollection } from '@/lib/supabase'
+import { debounce } from 'lodash'
+import {Image} from 'expo-image'
 
 
 const CardInfo = ({value, title}: {value: any, title: string}) => {
@@ -23,31 +31,14 @@ const CardInfo = ({value, title}: {value: any, title: string}) => {
             {
                 value &&                 
                 <View style={{marginRight: 10}} >
-                    <Text style={styles.header} >{title}</Text>
-                    <Text style={styles.descr} >{value}</Text>
+                    <Text style={AppStyle.textHeader} >{title}</Text>
+                    <Text style={AppStyle.textRegular} >{value}</Text>
                 </View>                
             }
         </>
     )
 }
 
-
-const OrderPizza = () => {
-    const initialValues = [{ id: "pizza", value: 3 }];
-    const [pizzas, setPizzas] = useState(initialValues);
-    const pizzaNumbers = [{ id: "pizza", label: "🍕", min: 0, max: 99 }];
-   
-    return (
-      <View>
-        <Text>I would like</Text>
-        <NumberPlease
-          digits={pizzaNumbers}
-          values={pizzas}
-          onChange={(values) => setPizzas(values)}
-        />
-      </View>
-    );
-  };
 
 const CardPage = () => {
 
@@ -73,6 +64,15 @@ const CardPage = () => {
         const {data, error} = await supabase.from("user_cards").select("total").eq("card_id", card_id).single()
         data ? setTotalInUserCollection(data!.total) : setTotalInUserCollection(0)        
     }
+    
+    useEffect(
+        useCallback(
+            () => {
+                updateTotalInUserCollection()
+            },
+            []
+        )
+    )
 
     const handleAddCardToCollection = async () => {
         if (addCardsNum == '') {
@@ -135,20 +135,26 @@ const CardPage = () => {
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, paddingVertical: 10, paddingHorizontal: 20}} >
             <ScrollView >
+                {/* Back Button */}
                 <View style={{width: '100%', alignItems: "flex-end"}} >
                     <Pressable onPress={() => router.back()} style={AppStyle.iconButton}  hitSlop={AppConstants.hitSlopLarge} >
                         <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
                     </Pressable>
                 </View>
+
                 <View style={styles.container} >
+                    {/* Card Image */}
                     <Animated.View entering={FadeInUp.delay(50).duration(600)} >
                         <Image style={styles.image} source={card.image_url} />
                     </Animated.View>
+
+                    {/* Card infos */}
                     <Animated.View entering={FadeInDown.delay(50).duration(600)} style={styles.descrContainer}  >
-                        <Text style={[styles.header, {color: Colors.red}]} >{card.name}</Text>
+                        {/* Card name */}
+                        <Text style={[AppStyle.textHeader, {color: Colors.white}]} >{card.name}</Text>
                         <View style={{width: '100%', marginVertical: 10, flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
                             <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
-                            <MaterialCommunityIcons name="cards-outline" size={20} color={Colors.orange} />
+                                <MaterialCommunityIcons name="cards" size={20} color={Colors.orange} />
                             <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
                         </View>
                         <FlatList
@@ -158,10 +164,12 @@ const CardPage = () => {
                             showsHorizontalScrollIndicator={false}
                             renderItem={({item}) => <CardInfo title={item.title} value={item.value} />}
                         />
-                        <Text style={styles.header} >Description</Text>
-                        <Text style={styles.descr} >{card.descr}</Text>
-                        <Text style={styles.header} >Cards in collection</Text>
-                        <Text style={AppStyle.textRegular}>{totalInUserCollection}</Text>
+                        <Text style={AppStyle.textHeader} >Description</Text>
+                        <Text style={AppStyle.textRegular} >{card.descr}</Text>
+                        <View style={{flexDirection: 'row', gap: 4, alignItems: "baseline", justifyContent: "center"}} >
+                            <Text style={AppStyle.textHeader} >Cards in collection:</Text>
+                            <Text style={AppStyle.textRegular}>{totalInUserCollection}</Text>
+                        </View>
                         <View style={{width: '100%', marginTop: 20, flexDirection: "row", gap: 10}} >
                             <TextInput 
                                 keyboardType='numeric' 

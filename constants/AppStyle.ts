@@ -45,7 +45,7 @@ const AppStyle = StyleSheet.create({
         padding: 10,
         paddingVertical: 20,
         borderCurve: "continuous",
-        borderRadius: 32
+        borderRadius: 4
     },
     textUserName: {
         color: Colors.text, 

@@ -97,7 +97,7 @@ const SignUp = () => {
     };
 
   return (
-    <SafeAreaView style={AppStyle.safeArea} >
+    <SafeAreaView style={[AppStyle.safeArea, {paddingHorizontal: 20}]} >
         <View style={{width: '100%', maxWidth: 700, alignItems: "center", justifyContent: "center", height: '100%'}} >
             <View style={{width: '100%', flexDirection: "row", justifyContent: "space-between", alignItems: "center"}} >
                 <View style={{flexDirection: "row", marginVertical: 30}} >

@@ -68,8 +68,7 @@ const ChangeProfileIcon = () => {
         setSaving(false)
     }
 
-    const handleBack = () => {        
-        router.replace({pathname: "/(tabs)/profile", params: {"imageId": tempProfileIcon?.image_id, "imageUrl": tempProfileIcon?.image_url}})
+    const handleBack = () => {
         router.back()
     }
 
@@ -100,7 +99,7 @@ const ChangeProfileIcon = () => {
                                 <ActivityIndicator color={AppConstants.icon.color} size={AppConstants.icon.size} />
                             </View>
                             :
-                            <Pressable style={AppStyle.iconButton} onPress={() => handleSave()} hitSlop={AppConstants.hitSlopLarge} >
+                            <Pressable style={AppStyle.iconButton} onPress={handleSave} hitSlop={AppConstants.hitSlopLarge} >
                                 <Ionicons name='checkmark-circle-outline' color={AppConstants.icon.color} size={AppConstants.icon.size}/>
                             </Pressable>
                         }
@@ -158,14 +157,5 @@ const styles = StyleSheet.create({
         width: 96, 
         height: 96, 
         borderRadius: 96
-    },
-    flexWrapContainer: {
-        width: '100%', 
-        flexWrap: "wrap", 
-        flexDirection: "row", 
-        alignItems: "center", 
-        justifyContent: "flex-start", 
-        gap: 20, 
-        paddingHorizontal: 10
-    }
+    }    
 })
