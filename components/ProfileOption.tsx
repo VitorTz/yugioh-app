@@ -34,7 +34,7 @@ const ProfileOption = ({
     <Animated.View entering={FadeInLeft.delay((index + 1) * 50).duration(700)} >
         <Pressable style={styles.profileOption} onPress={handlePress} >
         <View style={{flexDirection: "row", gap: 20, alignItems: "center"}} >
-            <Ionicons name={iconName} size={AppConstants.icon.size} color={"white"} />
+            <Ionicons name={iconName} size={AppConstants.icon.size} color={Colors.white} />
             <View>
             <Text style={styles.profileOptionText} >{title}</Text>
             {

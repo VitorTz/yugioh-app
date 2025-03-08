@@ -23,6 +23,9 @@ import { Colors } from '@/constants/Colors'
 import { router } from 'expo-router'
 import { debounce } from 'lodash'
 import {Image} from 'expo-image'
+import NumericPicker from '@/components/NumericPicker';
+import { sleep } from '@/helpers/sleep';
+import ShareCardButton from '@/components/ShareCardButton';
 
 
 const CardInfo = ({value, title}: {value: any, title: string}) => {
@@ -74,13 +77,12 @@ const CardPage = () => {
         )
     )
 
-    const handleAddCardToCollection = async () => {
-        if (addCardsNum == '') {
+    const handleAddCardToCollection = async (input: string) => {
+        if (input == '') {
             showToast("You are trying to add 0 cards to your collection", "", "error")
             return
-        }
-        setIsAddingDeckToCollection(true)
-        const {success, error} = await supaAddCardToCollection(card_id, parseInt(addCardsNum))
+        }        
+        const {success, error} = await supaAddCardToCollection(card_id, parseInt(input))
         if (success) {
             showToast("Successs", '', "success")
         } else if (error) {
@@ -94,22 +96,15 @@ const CardPage = () => {
                     break
             }
         }
-        await updateTotalInUserCollection()
-        setIsAddingDeckToCollection(false)
+        await updateTotalInUserCollection()        
     }
 
-    const debounceHandleAddCardToCollection = useCallback(
-        debounce(handleAddCardToCollection, 400),
-        [addCardsNum]
-    )
-
-    const handleRmvCardFromCollection = async () => {
-        if (rmvCardsNum == '') {
+    const handleRmvCardFromCollection = async (input: string) => {        
+        if (input == '') {
             showToast("You are trying to rmv 0 cards to your collection", "", "error")
             return
-        }
-        setIsAddingDeckToCollection(true)
-        const {success, error} = await supaRmvCardFromCollection(card_id, parseInt(rmvCardsNum))
+        }        
+        const {success, error} = await supaRmvCardFromCollection(card_id, parseInt(input))                
         if (success) {
             showToast("Successs", '', "success")
         } else if (error) {
@@ -123,98 +118,46 @@ const CardPage = () => {
                     break
             }
         }
-        await updateTotalInUserCollection()
-        setIsAddingDeckToCollection(false)
+        await updateTotalInUserCollection()        
     }
 
-    const debounceHandleRmvCardFromCollection = useCallback(
-        debounce(handleRmvCardFromCollection, 400),
-        [rmvCardsNum]
-    )
-    
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, paddingVertical: 10, paddingHorizontal: 20}} >
             <ScrollView >
                 {/* Back Button */}
-                <View style={{width: '100%', alignItems: "flex-end"}} >
+                <View style={{width: '100%', flexDirection: "row", alignItems: "center", justifyContent: "space-between"}} >
+                    <ShareCardButton image_url={card.image_url} />
                     <Pressable onPress={() => router.back()} style={AppStyle.iconButton}  hitSlop={AppConstants.hitSlopLarge} >
                         <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
                     </Pressable>
                 </View>
 
-                <View style={styles.container} >
-                    {/* Card Image */}
-                    <Animated.View entering={FadeInUp.delay(50).duration(600)} >
+                <View style={styles.container} >                    
+                    {/* Card infos */}                    
+                    <Animated.View entering={FadeInUp.delay(50).duration(600)} style={{width: '100%', alignItems: "center", justifyContent: "center"}} >
                         <Image style={styles.image} source={card.image_url} />
                     </Animated.View>
-
-                    {/* Card infos */}
-                    <Animated.View entering={FadeInDown.delay(50).duration(600)} style={styles.descrContainer}  >
-                        {/* Card name */}
-                        <Text style={[AppStyle.textHeader, {color: Colors.white}]} >{card.name}</Text>
-                        <View style={{width: '100%', marginVertical: 10, flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
-                            <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
-                                <MaterialCommunityIcons name="cards" size={20} color={Colors.orange} />
-                            <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
-                        </View>
-                        <FlatList
-                            data={card_info}
-                            keyExtractor={(item) => item.title}
-                            horizontal={true}
-                            showsHorizontalScrollIndicator={false}
-                            renderItem={({item}) => <CardInfo title={item.title} value={item.value} />}
-                        />
-                        <Text style={AppStyle.textHeader} >Description</Text>
-                        <Text style={AppStyle.textRegular} >{card.descr}</Text>
-                        <View style={{flexDirection: 'row', gap: 4, alignItems: "baseline", justifyContent: "center"}} >
-                            <Text style={AppStyle.textHeader} >Cards in collection:</Text>
-                            <Text style={AppStyle.textRegular}>{totalInUserCollection}</Text>
-                        </View>
-                        <View style={{width: '100%', marginTop: 20, flexDirection: "row", gap: 10}} >
-                            <TextInput 
-                                keyboardType='numeric' 
-                                value={addCardsNum}
-                                placeholder='0' 
-                                placeholderTextColor={Colors.white} 
-                                onChangeText={text => setAddCardsNum(text)}
-                                maxLength={3}
-                                style={{color: Colors.white, width: 80, padding: 20, backgroundColor: Colors.background, borderRadius: 4}} 
-                            />
-                            <Pressable 
-                                onPress={debounceHandleAddCardToCollection} 
-                                hitSlop={AppConstants.hitSlop} 
-                                style={{paddingHorizontal: 20, flex: 1, borderRadius: 4, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}}>
-                                    {
-                                     isAddingDeckToCollection ?
-                                        <ActivityIndicator size={AppConstants.icon.size} color={Colors.white}/> :
-                                        <Text style={AppStyle.textRegular} >add {addCardsNum} {addCardsNum > '1' ? "cards" : "card"} to collection</Text>
-                                    }
-                            </Pressable>
-                        </View>
-                        
-                        <View style={{width: '100%', marginTop: 20, flexDirection: "row", gap: 10}} >
-                            <TextInput 
-                                keyboardType='numeric' 
-                                value={rmvCardsNum}
-                                placeholder='0' 
-                                placeholderTextColor={Colors.white} 
-                                onChangeText={text => setRmvCardsNum(text)}
-                                maxLength={3}
-                                style={{color: Colors.white, width: 80, padding: 20, backgroundColor: Colors.background, borderRadius: 4}} 
-                            />
-                            <Pressable 
-                                onPress={debounceHandleRmvCardFromCollection} 
-                                hitSlop={AppConstants.hitSlop} 
-                                style={{paddingHorizontal: 20, flex: 1, borderRadius: 4, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}}>
-                                    {
-                                     isAddingDeckToCollection ?
-                                        <ActivityIndicator size={AppConstants.icon.size} color={Colors.white}/> :
-                                        <Text style={AppStyle.textRegular} >rmv {rmvCardsNum} {rmvCardsNum > '1' ? "cards" : "card"} from collection</Text>
-                                    }
-                            </Pressable>
-                        </View>
-
-                    </Animated.View>
+                    {/* Card name */}                        
+                    <View style={{width: '100%', marginVertical: 10, flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
+                        <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
+                            <MaterialCommunityIcons name="cards" size={20} color={Colors.orange} />
+                        <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
+                    </View>
+                    <FlatList
+                        data={card_info}
+                        keyExtractor={(item) => item.title}
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        renderItem={({item}) => <CardInfo title={item.title} value={item.value} />}
+                    />
+                    <Text style={AppStyle.textHeader} >Description</Text>
+                    <Text style={AppStyle.textRegular} >{card.descr}</Text>
+                    <View style={{flexDirection: 'row', gap: 4, alignItems: "baseline", justifyContent: "center"}} >
+                        <Text style={AppStyle.textHeader} >Cards in collection:</Text>
+                        <Text style={AppStyle.textRegular}>{totalInUserCollection}</Text>
+                    </View>                                                
+                    <NumericPicker apply={handleAddCardToCollection} title='add' />
+                    <NumericPicker apply={handleRmvCardFromCollection} title='remove' />                    
                 </View>
             </ScrollView>
             <Toast/>
@@ -226,31 +169,28 @@ export default CardPage
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,        
+        flex: 1,
         width: '100%',
-        gap: 20,
-        alignItems: "center"
+        rowGap: 10,
+        alignItems: "flex-start",
+        justifyContent: "flex-start",        
+        backgroundColor: Colors.gray,
+        borderRadius: 4,
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: Colors.orange
     },
     image: {                 
         width: 320,
         height: 460,
-        marginTop: 30
+        marginTop: 20        
     },
     header: {
         fontSize: 22,        
         color: Colors.orange,
         fontFamily: "LeagueSpartan_600SemiBold"
-    },
-    descrContainer: {
-        flex: 1,
-        width: '100%',
-        alignItems: "flex-start",
-        justifyContent: "flex-start",        
-        backgroundColor: Colors.gray,
-        borderRadius: 4,
-        padding: 20,
-        borderWidth: 1,
-        borderColor: Colors.orange
     },
     descr: {        
         color: Colors.white,

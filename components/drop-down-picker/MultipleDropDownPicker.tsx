@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import DropDownPicker from 'react-native-dropdown-picker'
 import { Colors } from '@/constants/Colors'
 import AppStyle from '@/constants/AppStyle'
@@ -61,7 +61,7 @@ const MultipleDropDownPicker = ({
             min={allowEmptyValues ? 0 : 1}            
             onChangeValue={(value: any) => handlePress(value)}
             dropDownContainerStyle={{backgroundColor: Colors.gray}}
-        />
+        />        
     );
 }
 

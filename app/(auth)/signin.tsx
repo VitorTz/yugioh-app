@@ -7,8 +7,7 @@ import {
   Text, 
   TextInput, 
   View, 
-  KeyboardAvoidingView,
-  Platform
+  KeyboardAvoidingView  
 } from 'react-native'
 import React from 'react'
 import { useState } from 'react'
@@ -19,7 +18,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useGlobalState } from '@/context/GlobalContext';
 import { router } from 'expo-router';
-import { supabase, supaFechGlobalContext, supaFetchProfileIcons, supaFetchUser } from '@/lib/supabase';
+import { supabase, supaFechGlobalContext } from '@/lib/supabase';
 import Toast from 'react-native-toast-message';
 import { showToast } from '@/helpers/util'
 import { sleep } from '@/helpers/sleep'

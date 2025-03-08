@@ -16,10 +16,16 @@ interface ImageGridProps {
     onEndReached: () => void
     columns: number
     isLoading: boolean
-    hasResult: boolean
+    hasResult: boolean    
 }
 
-const ImageGrid = ({images, onEndReached, columns, isLoading, hasResult}: ImageGridProps) => {  
+const ImageGrid = ({
+  images, 
+  onEndReached, 
+  columns, 
+  isLoading, 
+  hasResult  
+}: ImageGridProps) => {  
 
   const Footer = () => {
     return (

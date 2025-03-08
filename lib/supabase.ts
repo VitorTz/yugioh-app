@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { AuthError, createClient, PostgrestError, Session } from '@supabase/supabase-js'
-import { GlobalContext, ImageDB, UserDB, YuGiOhCard, YuGiOhDeck } from '@/helpers/types'
-import { CARD_FETCH_LIMIT, DECK_FETCH_LIMIT } from '@/constants/AppConstants'
+import { GlobalContext, ImageDB, UserDB, YuGiOhCard, YuGiOhDeck, YuGiOhUserCard, YuGiOhUserDeck } from '@/helpers/types'
+import { CARD_FETCH_LIMIT, DECK_FETCH_LIMIT, DECK_TYPES } from '@/constants/AppConstants'
 
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_API_URL ? process.env.EXPO_PUBLIC_API_URL : ""
@@ -201,6 +201,79 @@ export async function supaFetchCardsFromDeck(deck_id: number): Promise<YuGiOhCar
     return cards
 }
 
+export async function supaFetchUserCards(session: Session): Promise<{data: YuGiOhUserCard[], error: AuthError | PostgrestError | null}> {  
+  const {data, error} = await supabase.from('user_cards').select(`
+    total,
+    cards (
+      card_id,
+      name,
+      descr,
+      color,
+      attack,
+      defence,
+      level,
+      attribute,
+      archetype,
+      frametype,
+      race,
+      type,
+      image_url,
+      cropped_image_url
+    )
+  `
+  ).eq("user_id", session.user.id)
+  let cards: YuGiOhUserCard[] = data ? data : []
+  cards.sort(
+    (a: YuGiOhUserCard, b: YuGiOhUserCard) => {
+      if (a.cards.name < b.cards.name) {
+        return -1
+      }
+      if (a.cards.name == b.cards.name) {
+        return 0
+      }
+      return 1
+    }
+  )
+  return {data: cards, error}
+}
+
+export async function supaFetchUserDecks(session: Session): Promise<{data: YuGiOhUserDeck[], error: PostgrestError | null}> {
+  const {data, error} = await supabase.from("user_decks").select(
+    `
+      deck_id,
+      decks (
+        name,
+        image_url,
+        num_cards,
+        archetypes,
+        attributes,
+        frametypes,
+        races,
+        types,
+        type
+      )
+    `
+  ).eq("user_id", session.user.id)
+
+  const decks: YuGiOhUserDeck[] = data ? data.map(
+    item => {
+      return {
+        deck_id: item.deck_id, 
+        name: item.decks.name,
+        image_url: item.decks.image_url,
+        num_cards: item.decks.num_cards,
+        type: item.decks.type,
+        archetypes: item.decks.archetypes,
+        attributes: item.decks.attributes,
+        frametypes: item.decks.frametypes,
+        races: item.decks.races,
+        types: item.decks.types
+      }
+    }
+  ) : []
+  return {data: decks, error: error}
+}
+
 
 export async function supaFetchCards(
   searchTxt: string | null,
@@ -315,7 +388,14 @@ export const supaFetchDecks = async (
         query = query.contains('types', [value])
       }
     )
-  }  
+  }
+
+  if (options.has('deckType')) {
+    const t: string = options.get('deckType')
+    if (t != "Any" && DECK_TYPES.includes(t)) {
+      query = query.eq("type", t)
+    }
+  }
 
   const {data, error} = await query.order(
     'name', {ascending: true}

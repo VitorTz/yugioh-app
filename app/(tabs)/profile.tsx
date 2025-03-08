@@ -79,7 +79,7 @@ const Profile = () => {
   
   const ProfilePage = () => {
     return (
-      <View style={[AppStyle.backdrop]} >
+      <View style={[AppStyle.backdrop, {borderWidth: 1, borderColor: Colors.orange}]} >
         <ScrollView>
           <View style={styles.optionsView} >
             {
@@ -104,7 +104,7 @@ const Profile = () => {
         {/* Profile icon and name */}
         <Animated.View entering={FadeInUp.delay(50).duration(700)}  style={{position: 'absolute', top: -60, alignItems: "center", justifyContent: "center"}} >  
           {/* Profile Icon */}
-          <View style={{marginTop: 20, marginBottom: 10}}>              
+          <View style={{marginTop: 20, marginBottom: 10}}>
             {
               user ? 
               <ProfileIcon image={user.image} accentColor={Colors.background} /> :

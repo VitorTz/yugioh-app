@@ -237,7 +237,7 @@ const Database = () => {
 
           <View style={{width: '100%', flex: 1, display: filterType == "Deck" ? "flex" : "none"}} >
             <DeckGrid
-              columns={1}
+              columns={2}
               isLoading={isLoading}
               decks={decks}
               onEndReached={handleEndReached}

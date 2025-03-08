@@ -24,19 +24,13 @@ const DeckCard = ({deck, index, columns, width, height}: ImageCardProps) => {
         router.push({pathname: "/(pages)/deckPage", params: deck})
     }
 
-    const DeckInfo = ({title}: {title: string | number}) => {
-        return (
-            <Text style={[AppStyle.textRegular, {color: Colors.white}]}>{title}</Text>
-        )
-    }
-    
     return (        
         <Pressable onPress={() => handlePress()} style={[styles.button, {marginTop: index >= columns ? 10 : 0}]}>
             <Image contentFit='cover'  style={{width, height}} source={deck.image_url}/>
             <View style={[styles.container, {width: width}]} >
-                <DeckInfo title={deck.name} />
-                <DeckInfo title={`${deck.type} Deck`} />
-                <DeckInfo title={`${deck.num_cards} cards`} />
+                <Text style={[AppStyle.textRegular, {color: Colors.orange}]}>{deck.name}</Text>
+                <Text style={AppStyle.textRegular}>{deck.type}</Text>
+                <Text style={AppStyle.textRegular}>{deck.num_cards} cards</Text>                
             </View>
         </Pressable>
     )

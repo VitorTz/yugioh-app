@@ -55,6 +55,39 @@ export type YuGiOhDeck = {
     }[]
 }
 
+export type YuGiOhUserCard = {
+    total: number;
+    cards: {
+        card_id: number;
+        name: string;
+        descr: string;
+        color: string;
+        attack: string | null;
+        defence: string | null;
+        level: number | null;
+        attribute: string | null;
+        archetype: string | null;
+        frametype: string | null;
+        race: string | null;
+        type: string | null;
+        image_url: string;
+        cropped_image_url: string;
+    }[]
+}
+
+export type YuGiOhUserDeck = {
+    deck_id: number;
+    name: string
+    image_url: string
+    num_cards: number
+    type: string
+    archetypes: string[]
+    attributes: string[]
+    frametypes: string[]
+    races: string[]
+    types: string[]
+}
+
 export interface UserDB {    
     user_id: string
     name: string
@@ -90,6 +123,5 @@ export type NumberFilterType = {
 }
 
 export type CardOrderBy = "name" | "attack" | "defence" | "level"
-
 
 export type Order = "ASC" | "DESC"

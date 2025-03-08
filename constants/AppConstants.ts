@@ -60,10 +60,10 @@ export const AppConstants = {
 }
 
 export const DECK_TYPES = [
-  "Structure",
-  "Starter",
-  "Speed Duel",
-  "Community"
+  "Structure",  
+  "Community",
+  "TCG",
+  "Any"
 ].sort()
 
 export const ARCHETYPES = [
