@@ -125,7 +125,7 @@ const DeckPage = () => {
             <ScrollView>
                 {/* Back Button */}
                 <View style={styles.returnButton} >
-                    <Pressable onPress={() => router.back()} style={AppStyle.iconButton}  hitSlop={AppConstants.hitSlopLarge} >
+                    <Pressable onPress={() => router.back()} hitSlop={AppConstants.hitSlopLarge} >
                         <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
                     </Pressable>
                 </View>

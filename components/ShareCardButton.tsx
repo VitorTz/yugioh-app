@@ -23,7 +23,7 @@ const ShareCardButton = ({image_url}: {image_url: string}) => {
     }
 
     return (
-        <Pressable onPress={handleShare} style={AppStyle.iconButton}  hitSlop={AppConstants.hitSlopLarge} >
+        <Pressable onPress={handleShare} hitSlop={AppConstants.hitSlopLarge} >
             {
                 isLoading ?
                 <ActivityIndicator size={AppConstants.icon.size} color={AppConstants.icon.color} /> :

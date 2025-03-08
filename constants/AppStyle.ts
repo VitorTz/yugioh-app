@@ -37,7 +37,7 @@ const AppStyle = StyleSheet.create({
         borderColor: Colors.orange
     },
     backdrop: {
-        backgroundColor: Colors.gray,         
+        backgroundColor: Colors.gray,
         alignItems: "center", 
         justifyContent: "center", 
         width: "100%",

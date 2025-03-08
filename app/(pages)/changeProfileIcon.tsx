@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import AppStyle from '@/constants/AppStyle'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
@@ -11,36 +11,32 @@ import { showToast } from '@/helpers/util'
 import { router } from 'expo-router'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { ColumnItem } from '@/components/FlashListColumnItem'
-import { AppConstants } from '@/constants/AppConstants'
 import ProfileIcon from '@/components/ProfileIcon'
 import { FlashList } from "@shopify/flash-list"
-import { Session } from '@supabase/supabase-js'
-import { useRoute } from '@react-navigation/native'
-import { useLocalSearchParams, useSearchParams } from 'expo-router/build/hooks'
 import PageActivityIndicator from '@/components/PageActivityIndicator'
+import SaveButton from '@/components/SaveButton'
+import BackButton from '@/components/BackButton'
 
 
 var profileIcons: ImageDB[] = []
 
 const ChangeProfileIcon = () => {
-        
-    const [session, setSession] = useState<Session | null>(null)
-    const [saving, setSaving] = useState<boolean>(false)    
-    const [loading, setLoading] = useState<boolean>(false)
-    const [user, setUser] = useState<UserDB | null>(null)
-    const [tempProfileIcon, setTempProfileIcon] = useState<ImageDB | null>(user ? user.image : null)    
+    
+    const [loading, setLoading] = useState<boolean>(false)    
+    const [tempProfileIcon, setTempProfileIcon] = useState<ImageDB | null>(null)
 
-    const initPage = async () => {    
+
+    const initPage = async () => {
         setLoading(true)
             const {data: {session}, error} = await supabase.auth.getSession()
-            setSession(session)
             if (session) {
                 const user = await supaFetchUser(session)
-                setUser(user)
-                setTempProfileIcon(user ? user.image : null)
+                if (user) {
+                    setTempProfileIcon(user.image)
+                }
             }
             if (profileIcons.length == 0) {
-                profileIcons = await supaFetchProfileIcons()                
+                profileIcons = await supaFetchProfileIcons()
             }
         setLoading(false)
     }
@@ -53,29 +49,23 @@ const ChangeProfileIcon = () => {
     )
 
     const handleSave = async () => {
-        setSaving(true)
-        if (session && tempProfileIcon) {
+        const {data: {session}, error} = await supabase.auth.getSession()
+        if (session && tempProfileIcon) {            
             const {data, error} = await supabase.from("users").update(
                 {"image_id": tempProfileIcon.image_id}
             ).eq("user_id", session.user.id).select()
             if (error) {
                 showToast("Error", error.message, "error")
-                setSaving(false)
                 return
             }            
             showToast("Success", "Profile icon changed", "success")            
         }
-        setSaving(false)
-    }
-
-    const handleBack = () => {
-        router.back()
     }
 
     const CardContent = ({item, index}: {item: ImageDB, index: number}) => {
         return (
             <Animated.View entering={FadeInDown.delay(index * 50).duration(600)} >
-                <Pressable onPress={() => setTempProfileIcon(item) }>
+                <Pressable onPress={() => {setTempProfileIcon(item)} }>
                     <Image 
                         source={item.image_url} 
                         contentFit='cover' 
@@ -92,29 +82,16 @@ const ChangeProfileIcon = () => {
                 <PageActivityIndicator/> :
                 <>
                     <View style={{width: '100%', flexDirection: "row", alignItems: "center", justifyContent: "space-between"}} >
-                        {/* Save Button */}
-                        {
-                            saving ? 
-                            <View style={AppStyle.iconButton} >
-                                <ActivityIndicator color={AppConstants.icon.color} size={AppConstants.icon.size} />
-                            </View>
-                            :
-                            <Pressable style={AppStyle.iconButton} onPress={handleSave} hitSlop={AppConstants.hitSlopLarge} >
-                                <Ionicons name='checkmark-circle-outline' color={AppConstants.icon.color} size={AppConstants.icon.size}/>
-                            </Pressable>
-                        }
-                        
-                        
-                        {/* Back Button */}
-                        <Pressable style={AppStyle.iconButton} onPress={handleBack} hitSlop={AppConstants.hitSlopLarge}>
-                            <Ionicons name='arrow-back-circle-outline' color={AppConstants.icon.color} size={AppConstants.icon.size} />
-                        </Pressable>
-
+                        <SaveButton save={handleSave} />
+                        <BackButton/>
                     </View>
 
                     <View style={[AppStyle.backdrop, {marginTop: 30}]}>
                         <View style={{position: 'absolute', top: -50}} >
-                            <ProfileIcon image={tempProfileIcon} accentColor={Colors.background} />
+                            { 
+                                tempProfileIcon &&
+                                <Image source={tempProfileIcon.image_url} style={styles.image} />
+                            }
                         </View>                
                         <View style={{height: '100%', width: '100%', paddingTop: 70}} >
                             <FlashList                                                
@@ -148,9 +125,7 @@ const styles = StyleSheet.create({
     image: {
         width: 128,
         height: 128,
-        borderRadius: 128,
-        borderWidth: 1,
-        borderColor: Colors.white,
+        borderRadius: 128,        
         borderCurve: "continuous"
     },
     listImage: {

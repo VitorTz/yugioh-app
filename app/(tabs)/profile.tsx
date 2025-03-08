@@ -18,46 +18,35 @@ import ProfileIcon from '@/components/ProfileIcon'
 import { Session, User } from '@supabase/supabase-js'
 import { useLocalSearchParams, useSearchParams } from 'expo-router/build/hooks'
 import { useRoute } from '@react-navigation/native'
+import { Image } from 'expo-image'
 
 
 interface OnPressMap {
   [key: string]: () => void
 }
 
-const Profile = () => {  
+const Profile = () => {
   
-  const [waitingForSession, setWaitingForSession] = useState(true)
-  const [session, setSession] = useState<Session | null>(null)
-  const [user, setUser] = useState<UserDB | null>(null)  
-  const username = user ? user.name : ""
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleFocus = async () => {    
-    if (user == null) {
-      setWaitingForSession(true)
-    }
-
+  const initPage = async () => {
+    setIsLoading(true)
+    console.log("oi")
     const {data: {session}, error} = await supabase.auth.getSession()
-    setSession(session)
-    if (session) {
-      const usr = await supaFetchUser(session)
-      setUser(usr)
-    } else {
-      setUser(null)
+    if (session == null) {
       await sleep(500)
       router.replace("/(auth)/signin")
     }
-
-    setWaitingForSession(false)
+    setIsLoading(false)
+    console.log("ois")
   }
 
-  useFocusEffect(
-    useCallback(
-      () => {
-        handleFocus()
-      },
-      []
-    )
-  )
+  useEffect(
+    () => {
+      initPage()
+    },
+    []
+  )  
 
   const handleLogout = async () => {
     const {error} = await supabase.auth.signOut()
@@ -76,10 +65,10 @@ const Profile = () => {
     Github: async () => Linking.openURL(AppConstants.githubUrl),
     Logout: handleLogout
   }
-  
-  const ProfilePage = () => {
-    return (
-      <View style={[AppStyle.backdrop, {borderWidth: 1, borderColor: Colors.orange}]} >
+
+  return (
+    <SafeAreaView style={[AppStyle.safeArea, {justifyContent: "center"}]} >
+      <View style={AppStyle.backdrop} >
         <ScrollView>
           <View style={styles.optionsView} >
             {
@@ -103,30 +92,12 @@ const Profile = () => {
 
         {/* Profile icon and name */}
         <Animated.View entering={FadeInUp.delay(50).duration(700)}  style={{position: 'absolute', top: -60, alignItems: "center", justifyContent: "center"}} >  
-          {/* Profile Icon */}
+          {/* Profile Icon */}          
           <View style={{marginTop: 20, marginBottom: 10}}>
-            {
-              user ? 
-              <ProfileIcon image={user.image} accentColor={Colors.background} /> :
-              <Ionicons size={128} color={Colors.orange} />
-            }
-            {/* Change profile icon button */}
-            <Pressable onPress={() => router.push("/(pages)/changeProfileIcon")} style={styles.brush} hitSlop={AppConstants.hitSlopLarge} >
-              <Ionicons name='pencil-outline' size={20} color={Colors.white} />
-            </Pressable>
-          </View> 
-
-          {/* Profile Name */}
-          <Text style={AppStyle.textUserName}>{username}</Text>
+            <ProfileIcon/>
+          </View>
         </Animated.View>
-
       </View>
-    )
-  }
-
-  return (
-    <SafeAreaView style={[AppStyle.safeArea, {justifyContent: "center"}]} >
-      {waitingForSession ? <PageActivityIndicator/> : <ProfilePage/>}
       <Toast/>
     </SafeAreaView>
   )
@@ -135,20 +106,6 @@ const Profile = () => {
 export default Profile
 
 const styles = StyleSheet.create({  
-  brush: {    
-    position: 'absolute',
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 4,
-    borderRadius: 32, 
-    backgroundColor: Colors.background, 
-    borderWidth: 1, 
-    borderColor: Colors.white,
-    bottom: 0,  
-    right: 0
-  },
   optionsView: {
     width: '100%', 
     gap: 30, 

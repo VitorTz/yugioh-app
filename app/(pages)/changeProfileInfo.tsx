@@ -109,7 +109,7 @@ const ProfileInfo = () => {
                 <PageActivityIndicator/> :
                 <>
                     <View style={{width: '100%', marginBottom: 30, flexDirection: "row", alignItems: "center", justifyContent: "flex-end"}} >
-                        <Pressable style={AppStyle.iconButton} onPress={() => router.back()} hitSlop={{left: 20, right: 20, top: 20, bottom: 20}}>
+                        <Pressable  onPress={() => router.back()} hitSlop={{left: 20, right: 20, top: 20, bottom: 20}}>
                             <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
                         </Pressable>
                     </View>     

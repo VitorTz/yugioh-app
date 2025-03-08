@@ -20,6 +20,7 @@ const _layout = () => {
                 <Stack.Screen name='(pages)/changeProfileInfo' options={{headerShown: false}} />
                 <Stack.Screen name='(pages)/cardPage' options={{headerShown: false, presentation: "transparentModal", animation: "fade"}} />
                 <Stack.Screen name='(pages)/deckPage' options={{headerShown: false, presentation: "transparentModal", animation: "fade"}} />
+                <Stack.Screen name='(pages)/createDeck' options={{headerShown: false}} />
                 <Stack.Screen name='(tabs)' options={{headerShown: false}} />
             </Stack>
         </View>

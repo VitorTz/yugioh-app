@@ -1,5 +1,6 @@
 import { 
     FlatList, 
+    KeyboardAvoidingView, 
     Pressable, 
     SafeAreaView, 
     ScrollView, 
@@ -26,6 +27,7 @@ import {Image} from 'expo-image'
 import NumericPicker from '@/components/NumericPicker';
 import { sleep } from '@/helpers/sleep';
 import ShareCardButton from '@/components/ShareCardButton';
+import CopyStringButton from '@/components/CopyStringButton';
 
 
 const CardInfo = ({value, title}: {value: any, title: string}) => {
@@ -45,11 +47,8 @@ const CardInfo = ({value, title}: {value: any, title: string}) => {
 
 const CardPage = () => {
 
-    const card = useLocalSearchParams()
-    const [isAddingDeckToCollection, setIsAddingDeckToCollection] = useState(false)
-    const [totalInUserCollection, setTotalInUserCollection] = useState(0)
-    const [addCardsNum, setAddCardsNum] = useState('')
-    const [rmvCardsNum, setRmvCardsNum] = useState('')
+    const [totalInUserCollection, setTotalInUserCollection] = useState(0)    
+    const card = useLocalSearchParams()    
     const card_id = card.card_id
     
     const card_info = [
@@ -123,43 +122,45 @@ const CardPage = () => {
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: Colors.background, paddingVertical: 10, paddingHorizontal: 20}} >
-            <ScrollView >
-                {/* Back Button */}
-                <View style={{width: '100%', flexDirection: "row", alignItems: "center", justifyContent: "space-between"}} >
-                    <ShareCardButton image_url={card.image_url} />
-                    <Pressable onPress={() => router.back()} style={AppStyle.iconButton}  hitSlop={AppConstants.hitSlopLarge} >
-                        <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
-                    </Pressable>
-                </View>
-
-                <View style={styles.container} >                    
-                    {/* Card infos */}                    
-                    <Animated.View entering={FadeInUp.delay(50).duration(600)} style={{width: '100%', alignItems: "center", justifyContent: "center"}} >
-                        <Image style={styles.image} source={card.image_url} />
-                    </Animated.View>
-                    {/* Card name */}                        
-                    <View style={{width: '100%', marginVertical: 10, flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
-                        <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
-                            <MaterialCommunityIcons name="cards" size={20} color={Colors.orange} />
-                        <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
+            <KeyboardAvoidingView>
+                <ScrollView >                    
+                    <View style={{width: '100%', paddingVertical: 10, flexDirection: "row", alignItems: "center", justifyContent: "space-between"}} >
+                        <View style={{flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 20}} >
+                            <ShareCardButton image_url={card.image_url} />
+                            <CopyStringButton text={card.name} />
+                        </View>
+                        <Pressable onPress={() => router.back()}  hitSlop={AppConstants.hitSlopLarge} >
+                            <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
+                        </Pressable>
                     </View>
-                    <FlatList
-                        data={card_info}
-                        keyExtractor={(item) => item.title}
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}
-                        renderItem={({item}) => <CardInfo title={item.title} value={item.value} />}
-                    />
-                    <Text style={AppStyle.textHeader} >Description</Text>
-                    <Text style={AppStyle.textRegular} >{card.descr}</Text>
-                    <View style={{flexDirection: 'row', gap: 4, alignItems: "baseline", justifyContent: "center"}} >
-                        <Text style={AppStyle.textHeader} >Cards in collection:</Text>
-                        <Text style={AppStyle.textRegular}>{totalInUserCollection}</Text>
-                    </View>                                                
-                    <NumericPicker apply={handleAddCardToCollection} title='add' />
-                    <NumericPicker apply={handleRmvCardFromCollection} title='remove' />                    
-                </View>
-            </ScrollView>
+                    <View style={styles.container}>
+                        <Animated.View entering={FadeInUp.delay(50).duration(600)} style={{width: '100%', alignItems: "center", justifyContent: "center"}} >
+                            <Image style={styles.image} source={card.image_url} />
+                        </Animated.View>
+                        {/* Card name */}                        
+                        <View style={{width: '100%', marginVertical: 10, flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
+                            <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
+                                <MaterialCommunityIcons name="cards" size={20} color={Colors.orange} />
+                            <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
+                        </View>
+                        <FlatList
+                            data={card_info}
+                            keyExtractor={(item) => item.title}
+                            horizontal={true}
+                            showsHorizontalScrollIndicator={false}
+                            renderItem={({item}) => <CardInfo title={item.title} value={item.value} />}
+                        />
+                        <Text style={AppStyle.textHeader} >Description</Text>
+                        <Text style={AppStyle.textRegular} >{card.descr}</Text>
+                        <View style={{flexDirection: 'row', gap: 4, alignItems: "baseline", justifyContent: "center"}} >
+                            <Text style={AppStyle.textHeader} >Cards in collection:</Text>
+                            <Text style={AppStyle.textRegular}>{totalInUserCollection}</Text>
+                        </View>
+                        <NumericPicker apply={handleAddCardToCollection} title='add' />
+                        <NumericPicker apply={handleRmvCardFromCollection} title='remove' />                    
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
             <Toast/>
         </SafeAreaView>
     )

@@ -346,6 +346,10 @@ export const supaFetchDecks = async (
     types
   `)  
 
+  query = query.eq("is_public", true)  
+
+  query = query.gte("num_cards", 1)
+
   if (searchTxt) {
     query = query.ilike("name", `%${searchTxt}%`)
   }

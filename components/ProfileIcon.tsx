@@ -1,37 +1,60 @@
-import { StyleSheet } from 'react-native'
-import { ImageDB } from '@/helpers/types'
-import {Image} from 'expo-image'
-import { Ionicons } from '@expo/vector-icons'
+import { supabase, supaFetchUser } from '@/lib/supabase'
 import { AppConstants } from '@/constants/AppConstants'
-import Animated, { FadeInUp } from 'react-native-reanimated'
-import React from 'react'
+import React, { useCallback, useState } from 'react'
+import { Ionicons } from '@expo/vector-icons'
+import { useFocusEffect } from 'expo-router'
 import { Colors } from '@/constants/Colors'
+import { StyleSheet, Text, View, Pressable } from 'react-native'
+import AppStyle from '@/constants/AppStyle'
+import { router } from 'expo-router'
+import {Image} from 'expo-image'
+import { UserDB } from '@/helpers/types'
 
 
-interface ProfileIconProps {
-    image: ImageDB | undefined | null
-    accentColor: string | undefined | null
-    animationDelay?: number
-    animationDuration?: number
-}
 
-const ProfileIcon = ({image, accentColor, animationDelay = 100, animationDuration = 600}: ProfileIconProps) => {
-    const color = accentColor ? accentColor : Colors.background
+var lastImageUrl = ''
+
+const ProfileIcon = () => {
+
+    const [user, setUser] = useState<UserDB | null>(null)
+    
+    const update = async () => {
+        const {data: {session}, error} = await supabase.auth.getSession()
+        if (session) {
+            const user = await supaFetchUser(session)
+            lastImageUrl = user ? user.image.image_url : ''
+            setUser(user)
+        }
+    }
+
+    useFocusEffect(
+        useCallback(
+            () => {
+                update()
+            },
+            []
+        )
+    )
+    
     return (
-        <Animated.View entering={FadeInUp.delay(animationDelay).duration(animationDuration)} >
+        <>
             {        
-                image ?
-                <Image
-                    style={[styles.image, {backgroundColor: color}]}
-                    source={image.image_url}
-                    contentFit="cover"/> 
-                :
-                <Ionicons 
-                    size={128} 
-                    color={AppConstants.icon.color} 
-                    name='person-circle'/>
+                user && lastImageUrl != '' &&
+                <View style={{alignItems: "center", gap: 10}}>
+                    <View>
+                        <Image
+                        style={styles.image}
+                        source={user.image.image_url}
+                        contentFit="cover"/>
+                        <Pressable onPress={() => router.push("/(pages)/changeProfileIcon")} style={styles.brush} hitSlop={AppConstants.hitSlopLarge} >
+                            <Ionicons name='pencil-outline' size={20} color={Colors.white} />
+                        </Pressable>
+                    </View>
+                    <Text style={AppStyle.textUserName}>{user ? user.name : ''}</Text>
+
+                </View>
             }
-        </Animated.View>
+        </>
     )
 }
 
@@ -41,6 +64,21 @@ const styles = StyleSheet.create({
     image: {
         width: 128,
         height: 128,
-        borderRadius: 128
+        borderRadius: 128,
+        backgroundColor: Colors.background
+    },
+    brush: {    
+        position: 'absolute',
+        width: 32,
+        height: 32,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 4,
+        borderRadius: 32, 
+        backgroundColor: Colors.background, 
+        borderWidth: 1, 
+        borderColor: Colors.white,
+        bottom: 0,  
+        right: 0
     }
 })

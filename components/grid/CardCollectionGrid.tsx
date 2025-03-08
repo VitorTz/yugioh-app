@@ -12,8 +12,6 @@ import { supabase, supaFetchUserCards } from '@/lib/supabase'
 import { Colors } from '@/constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
 import AppStyle from '@/constants/AppStyle'
-import { Session } from '@supabase/supabase-js'
-import { debounce } from 'lodash'
 
 
 const GRID_COLUMNS = 4
@@ -63,10 +61,10 @@ const CollectionCard = ({card, index}: {card: YuGiOhUserCard, index: number}) =>
 }
 
 
-const CardCollectionGrid = () => {
-
+const CardCollectionGrid = () => {    
     const [isLoading, setIsLoading] = useState(false)
     const [cards, setCards] = useState<YuGiOhUserCard[]>([])
+    const loadingCards = isLoading && cards.length == 0
 
     let totalCards = 0
     cards.forEach(item => totalCards += item.total)
@@ -75,16 +73,10 @@ const CardCollectionGrid = () => {
     const updatePage = async () => {
         const {data: {session}, error} = await supabase.auth.getSession()        
         if (session) {
-            let loadState = false
-            if (cards.length == 0) {
-                loadState = true
-                setIsLoading(true)
-            } 
+            setIsLoading(true)        
             const {data, error: err} = await supaFetchUserCards(session)
             setCards([...data])
-            if (loadState) {
-                setIsLoading(false)
-            }
+            setIsLoading(false)
         }        
     }
 
@@ -103,12 +95,12 @@ const CardCollectionGrid = () => {
             <View style={{width: '100%', flexDirection: 'row', alignItems: "center", justifyContent: "space-between"}} >
                 <Text style={AppStyle.textHeader}>Cards{totalCardStr}</Text>
                 <Pressable onPress={() => router.navigate("/(tabs)/database")} hitSlop={AppConstants.hitSlopLarge} >
-                <Ionicons name='add-outline' size={30} color={Colors.orange} />
+                    <Ionicons name='add-outline' size={30} color={Colors.orange} />
                 </Pressable>
             </View>
             <View style={{width: '100%', height: hp(50)}} >
             {
-                isLoading ?
+                loadingCards ?
                 <View style={{flex: 1, alignItems: "center", justifyContent: "center"}} >
                     <ActivityIndicator size={64} color={Colors.orange} />
                 </View>
