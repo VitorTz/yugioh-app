@@ -141,6 +141,17 @@ const DeckPage = () => {
                     </View>
                     {/* Deck Name */}
                     <Text style={[styles.header, {color: Colors.white}]} >{deck.name}</Text>
+
+                    {
+                        deck.descr &&
+                        <>
+                            <Text style={styles.header}>Description</Text>
+                            <ScrollView style={{width: '100%', maxHeight: hp(20)}} nestedScrollEnabled={true} >
+                                <Text style={styles.descr}>{deck.descr}</Text>
+                            </ScrollView>
+                        </>
+                    }
+                    
                     {/* Deck info */}
                     {card_info.map((item) => (<DeckInfo key={item.title} value={item.value} title={item.title}/>))}
                     

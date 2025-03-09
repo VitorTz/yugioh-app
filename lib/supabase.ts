@@ -337,6 +337,7 @@ export const supaFetchDecks = async (
     deck_id,
     name,
     type,
+    descr,
     image_url,    
     num_cards,    
     archetypes,

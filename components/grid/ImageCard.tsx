@@ -15,8 +15,7 @@ interface ImageCardProps {
 }
 
 
-const ImageCard = ({card, index, gridColumns, width, height}: ImageCardProps) => {    
-    console.log(card.name)
+const ImageCard = ({card, index, gridColumns, width, height}: ImageCardProps) => {
     const handlePress = () => {
         Keyboard.dismiss()
         router.push(

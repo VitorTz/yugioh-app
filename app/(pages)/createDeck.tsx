@@ -17,6 +17,7 @@ import { Session } from '@supabase/supabase-js'
 import { sleep } from '@/helpers/sleep'
 import { ScrollView } from 'react-native-gesture-handler'
 import { isDelete } from 'lexical/LexicalUtils'
+import CardSearch from '@/components/CardSearch'
 
 
 const schema = yup.object().shape({  
@@ -48,7 +49,7 @@ const CreateDeck = () => {
 
 
   const addCards = () => {
-    console.log(deckId.current)
+    router.replace("/(tabs)/database")
   }
 
   const {
@@ -169,7 +170,7 @@ const CreateDeck = () => {
         await sleep(1000)
         setIsPublic(false)
         setDeckExists(false)
-        setDeckName('')
+        setDeckName('')        
         deckId.current = null
       } else {
         console.log(error)
@@ -182,108 +183,110 @@ const CreateDeck = () => {
  
   return (
     <SafeAreaView style={{flex: 1, padding: 20, backgroundColor: Colors.background}} >            
+      <ScrollView style={{flex: 1}} >
+        <View style={{width: '100%', height: 40, alignItems: "center", justifyContent: "space-between", flexDirection: "row", marginBottom: 10}} >
+          {
+            !deckExists && 
+            <Text style={AppStyle.textHeader}>Create Deck</Text>
+          }
+          {
+            deckExists &&
+            <Animated.View entering={FadeInLeft.delay(50).duration(600)} >
+                <Text style={AppStyle.textHeader}>Edit Deck</Text>
+            </Animated.View>
+          }        
+          <Pressable onPress={() => router.back()}  hitSlop={AppConstants.hitSlopLarge} >
+              <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
+          </Pressable>          
+        </View>
 
-      <View style={{width: '100%', height: 40, alignItems: "center", justifyContent: "space-between", flexDirection: "row", marginBottom: 10}} >
         {
-          !deckExists && 
-          <Text style={AppStyle.textHeader}>Create Deck</Text>
+          deckExists && deckName &&        
+            <Animated.View entering={FadeInLeft.delay(50).duration(600)} style={{gap: 20, alignItems: "center", marginVertical: 10}} >
+              <Text style={AppStyle.textHeader}>{deckName}</Text>
+              <View style={{width: '100%', flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
+                <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
+                <Ionicons name="layers-outline" size={20} color={Colors.orange} />
+                <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
+              </View>            
+            </Animated.View>        
         }
+
+        <View style={{width: '100%', gap: 10, marginBottom: 10}} >
+          <Text style={AppStyle.textHeader}>Name{deckExists ? '' : ' *'}</Text>
+          <Controller
+            control={control}          
+            name="name"
+            render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput              
+                style={styles.input}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}/>
+            )}/>
+            {errors.name && (<Text style={styles.error}>{errors.name.message}</Text>)}
+        </View>
+        
+        <Text style={AppStyle.textHeader}>Description</Text>
+        <View style={{width: '100%', height: 240}} >
+            <Editor setPlainText={setPlainText}  setEditorState={setEditorState}  />
+        </View>
+      
+        <View style={{width: '100%', flexDirection: 'row', alignItems: "center", justifyContent: 'flex-start'}} >
+          <Text style={[AppStyle.textRegular, {color: Colors.orange}]}>Is public deck?</Text>
+          <Switch
+            trackColor={{false: '#767577', true: '#767577'}}
+            thumbColor={isPublic ? Colors.orange : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isPublic}
+          />
+        </View>        
+
+        {
+          !deckExists &&
+          <Pressable onPress={handleSubmit(onSubmit)} style={{width: '100%', height: 50, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}} >
+            {
+              isLoading ? 
+              <ActivityIndicator size={32} color={Colors.white}/> :
+              <Text style={[AppStyle.textRegular, {fontSize: 20}]}>Create</Text>
+            }
+          </Pressable>
+        }
+
         {
           deckExists &&
-          <Animated.View entering={FadeInLeft.delay(50).duration(600)} >
-              <Text style={AppStyle.textHeader}>Edit Deck</Text>
-          </Animated.View>
-        }        
-        <Pressable onPress={() => router.back()}  hitSlop={AppConstants.hitSlopLarge} >
-            <Ionicons name='arrow-back-circle-outline' size={AppConstants.icon.size} color={AppConstants.icon.color} />
-        </Pressable>          
-      </View>
-
-      {
-        deckExists && deckName &&        
-          <Animated.View entering={FadeInLeft.delay(50).duration(600)} style={{gap: 20, alignItems: "center", marginTop: 20, marginBottom: 10}} >
-            <Text style={AppStyle.textHeader}>{deckName}</Text>
-            <View style={{width: '100%', flexDirection: 'row', alignItems: "center", justifyContent: "center", gap: 10}} >  
-              <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
-              <Ionicons name="layers-outline" size={20} color={Colors.orange} />
-              <View style={{flex: 1, height: 2, backgroundColor: Colors.orange}} ></View>
-            </View>            
-          </Animated.View>        
-      }
-
-      <View style={{width: '100%', gap: 10, marginBottom: 10}} >
-        <Text style={AppStyle.textHeader}>Name{deckExists ? '' : ' *'}</Text>
-        <Controller
-          control={control}          
-          name="name"
-          render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput              
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}/>
-          )}/>
-          {errors.name && (<Text style={styles.error}>{errors.name.message}</Text>)}
-      </View>
-      
-      <Text style={AppStyle.textHeader}>Description</Text>
-      <View style={{width: '100%', height: 240}} >
-          <Editor setPlainText={setPlainText}  setEditorState={setEditorState}  />
-      </View>
-    
-      <View style={{width: '100%', flexDirection: 'row', alignItems: "center", justifyContent: 'flex-start'}} >
-        <Text style={[AppStyle.textRegular, {color: Colors.orange}]}>Is public deck?</Text>
-        <Switch
-          trackColor={{false: '#767577', true: '#767577'}}
-          thumbColor={isPublic ? Colors.orange : '#f4f3f4'}
-          ios_backgroundColor="#3e3e3e"
-          onValueChange={toggleSwitch}
-          value={isPublic}
-        />
-      </View>        
-
-      {
-        !deckExists &&
-        <Pressable onPress={handleSubmit(onSubmit)} style={{width: '100%', height: 50, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}} >
-          {
-            isLoading ? 
-            <ActivityIndicator size={32} color={Colors.white}/> :
-            <Text style={[AppStyle.textRegular, {fontSize: 20}]}>Create</Text>
-          }
-        </Pressable>
-      }
-
-      {
-        deckExists &&
-        <View style={{width: '100%', gap: 10}} >
-          <View style={{flexDirection: 'row', gap: 10}} >
-            <Animated.View entering={FadeInLeft.delay(50).duration(600)} style={{flex: 1}} >
-                <Pressable onPress={addCards} style={{height: 50, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}} >
-                  <Text style={[AppStyle.textRegular, {fontSize: 20}]}>Add Cards</Text>
+          <View style={{width: '100%', gap: 10}} >
+            <View style={{flexDirection: 'row', gap: 10}} >              
+              <Animated.View entering={FadeInLeft.delay(50).duration(600)} style={{flex: 1}} >
+                  <Pressable onPress={addCards} style={{height: 50, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}} >
+                    <Text style={[AppStyle.textRegular, {fontSize: 18}]}>Add Cards</Text>
+                  </Pressable>
+              </Animated.View>
+              <Animated.View entering={FadeInRight.delay(50).duration(600)} style={{flex: 1}} >
+                <Pressable onPress={handleSubmit(onSubmit)} style={{width: '100%', height: 50, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}} >
+                  {
+                    isLoading ? 
+                    <ActivityIndicator size={32} color={Colors.white}/> :
+                    <Text style={[AppStyle.textRegular, {fontSize: 18}]}>Save changes</Text>
+                  }
                 </Pressable>
-            </Animated.View>
-            <Animated.View entering={FadeInRight.delay(50).duration(600)} style={{flex: 1}} >
-              <Pressable onPress={handleSubmit(onSubmit)} style={{width: '100%', height: 50, backgroundColor: Colors.orange, alignItems: "center", justifyContent: "center"}} >
-                {
-                  isLoading ? 
-                  <ActivityIndicator size={32} color={Colors.white}/> :
-                  <Text style={[AppStyle.textRegular, {fontSize: 20}]}>Edit</Text>
-                }
-              </Pressable>
-            </Animated.View>          
-          </View>
-          <Animated.View entering={FadeInDown.delay(50).duration(600)} style={{width: '100%'}} >
+              </Animated.View>          
+            </View>
+            <Animated.View entering={FadeInDown.delay(50).duration(600)} style={{flex: 1}} >
             <Pressable onPress={deleteDeck} style={{width: '100%', height: 50, backgroundColor: Colors.red, alignItems: "center", justifyContent: "center"}} >
               {
                 isDeleting ? 
                 <ActivityIndicator size={32} color={Colors.white}/> :
-                <Text style={[AppStyle.textRegular, {fontSize: 20}]}>Delete</Text>
+                <Text style={[AppStyle.textRegular, {fontSize: 18}]}>Delete</Text>
               }
             </Pressable>
           </Animated.View>
-        </View>
-      }
+          </View>
+        }
 
+
+      </ScrollView>
 
       <Toast/>
     </SafeAreaView>

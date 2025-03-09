@@ -18,7 +18,7 @@ import { Image } from 'expo-image'
 
 
 const GRID_PADDING = 10
-const GRID_GAP = 20
+const GRID_GAP = 40
 const GRID_COLUMNS = 1
 
 
@@ -39,7 +39,7 @@ const DeckItem = ({deck, index}: {deck: YuGiOhUserDeck, index: number}) => {
   return (        
     <Pressable onPress={() => handlePress()} style={{marginTop: index >= GRID_COLUMNS ? 10 : 0}}>
         <Image contentFit='cover'  style={{width, height}} source={deck.image_url}/>
-        <View style={{width: width, padding: 20, borderTopWidth: 2, borderColor: Colors.orange}} >
+        <View style={{width: width, padding: 20, backgroundColor: Colors.background,  borderTopWidth: 2, borderColor: Colors.orange}} >
             <Text style={[AppStyle.textRegular, {color: Colors.orange}]}>{deck.name}</Text>
             <Text style={AppStyle.textRegular}>{deck.type}</Text>
             <Text style={AppStyle.textRegular}>{deck.num_cards} cards</Text>                
@@ -84,9 +84,8 @@ const DeckCollectionGrid = () => {
     return (
     <View style={styles.container} >
         <View style={{width: '100%', flexDirection: 'row', alignItems: "center", justifyContent: "space-between"}} >
-            <Text style={AppStyle.textHeader}>Decks{totalDecksStr}
-            </Text>
-            <View style={{flexDirection: 'row', gap: 10, alignItems: "center", justifyContent: "center"}} >
+            <Text style={AppStyle.textHeader}>Total: {decks.length}</Text>
+            <View style={{flexDirection: 'row', gap: 20, alignItems: "center", justifyContent: "center"}} >
                 <Pressable onPress={handleCreateDeck} hitSlop={AppConstants.hitSlop} >
                     <Ionicons name='create-outline' size={30} color={Colors.orange}/>
                 </Pressable>
@@ -95,13 +94,14 @@ const DeckCollectionGrid = () => {
                 </Pressable>
             </View>
         </View>
-        <View style={{width: '100%', height: hp(80)}} >
+        <View style={{width: '100%', flex: 1, height: hp(100)}} >
             {
                 loadingDecks ?
                 <View style={{flex: 1, alignItems: "center", justifyContent: "center"}} >
                     <ActivityIndicator size={64} color={Colors.orange} />
                 </View>
                 :
+                
                 <FlashList
                 nestedScrollEnabled={true}
                 data={decks}
@@ -111,7 +111,7 @@ const DeckCollectionGrid = () => {
                 renderItem={
                     ({item, index}) => <DeckItem deck={item} index={index} />
                 }
-                />
+                />                
             } 
         </View>
     </View>
@@ -123,7 +123,10 @@ export default DeckCollectionGrid
 const styles = StyleSheet.create({
     container: {
         width: '100%', 
-        padding: 20, 
+        flex: 1,
+        padding: 20,
+        alignItems: "center",
+        justifyContent: "center",        
         backgroundColor: Colors.gray, 
         borderRadius: 4, 
         borderWidth: 1, 

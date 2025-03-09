@@ -68,7 +68,6 @@ const CardCollectionGrid = () => {
 
     let totalCards = 0
     cards.forEach(item => totalCards += item.total)
-    const totalCardStr = totalCards > 0 ? `: ${totalCards}` : ''
 
     const updatePage = async () => {
         const {data: {session}, error} = await supabase.auth.getSession()        
@@ -93,12 +92,12 @@ const CardCollectionGrid = () => {
     return (
         <View style={styles.container} >
             <View style={{width: '100%', flexDirection: 'row', alignItems: "center", justifyContent: "space-between"}} >
-                <Text style={AppStyle.textHeader}>Cards{totalCardStr}</Text>
+                <Text style={AppStyle.textHeader}>Total: {totalCards}</Text>
                 <Pressable onPress={() => router.navigate("/(tabs)/database")} hitSlop={AppConstants.hitSlopLarge} >
                     <Ionicons name='add-outline' size={30} color={Colors.orange} />
                 </Pressable>
             </View>
-            <View style={{width: '100%', height: hp(50)}} >
+            <View style={{width: '100%', flex: 1, height: hp(100)}} >
             {
                 loadingCards ?
                 <View style={{flex: 1, alignItems: "center", justifyContent: "center"}} >
@@ -125,6 +124,7 @@ export default CardCollectionGrid
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         width: '100%', 
         padding: 20, 
         backgroundColor: Colors.gray, 

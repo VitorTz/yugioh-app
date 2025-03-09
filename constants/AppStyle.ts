@@ -10,7 +10,7 @@ const AppStyle = StyleSheet.create({
         alignItems: "center",        
         backgroundColor: Colors.background, 
         paddingTop: 20,
-        paddingBottom: 100,
+        paddingBottom: 85,
         paddingHorizontal: 10
     },
     safeAreaLarge: {
